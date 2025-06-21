@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: ft_backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - :/app/node_modules
