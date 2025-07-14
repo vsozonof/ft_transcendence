@@ -12,7 +12,7 @@ fastify.get('/api/test', async (request, reply) => {
 fastify.get('/api/db', async (request, reply) => {
 	db.run(`
   		INSERT OR IGNORE INTO users (username, email, password)
-  		VALUES ('Victor', 'victor@test.com', 'prout')
+  		VALUES ('Victor', 'victor@test.com', 'prout');
 	`);
 
 	return new Promise((resolve, reject) => {

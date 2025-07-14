@@ -17,7 +17,10 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
       email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL
+      password TEXT NOT NULL,
+      loose INTEGER DEFAULT 0,
+      win INTEGER DEFAULT 0,
+      activated BOOLEAN DEFAULT TRUE
     )
   `, (err) => {
     if (err)

@@ -6,9 +6,11 @@
   },
   "dependencies": {
     "fastify": "^4.0.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "argon2": "^0.28.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.0"
   }
+
 }
