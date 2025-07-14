@@ -5,7 +5,8 @@
     "dev": "nodemon src/index.js"
   },
   "dependencies": {
-    "fastify": "^4.0.0"
+    "fastify": "^4.0.0",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "nodemon": "^2.0.0"
