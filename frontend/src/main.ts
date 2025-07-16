@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.ts                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/05 19:16:21 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/14 03:49:30 by vsozonof         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 import { loginHandler } from "./views/login";
 import { createMainMenu } from "./views/mainMenu";
 import { startPongGame } from "./pong";
@@ -29,7 +17,7 @@ function setupBackground() {
 async function launchApp() {
 	if (!app)
 		return;
-	
+	console.log('Launching app...');
 	setupBackground();
 	await loginHandler();
 
@@ -37,9 +25,9 @@ async function launchApp() {
 		mainMenu.remove();
 		launchApp();
 	});
-	
+
 	background.appendChild(mainMenu);
-	
+
 }
 
 

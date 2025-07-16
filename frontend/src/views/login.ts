@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   login.ts                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/14 02:57:14 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/15 23:07:42 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,17 @@ import { background } from "../main"
 
 // Form de login basique, présent uniquement pour faire le lien en auth
 // et redirection vers le main menu
-// -> il te reste pas mal de chose à faire dessus: 
+// -> il te reste pas mal de chose à faire dessus:
 // (ex: design, liaison backend, redirection propre vers main menu, gestion d'erreur...)
 
-export function loginHandler(): Promise<void> {
-	return new Promise((resolve, reject) => {	
+export async function loginHandler(): Promise<void> {
+	return new Promise((resolve, reject) => {
 		const loginWrapper = document.createElement('div');
 		loginWrapper.className = `
 			h-screen w-screen
 			flex items-center justify-center
 		`;
-		
+
 		const loginPrompt = document.createElement('div');
 		loginPrompt.id = 'loginPrompt';
 
@@ -70,19 +70,28 @@ export function loginHandler(): Promise<void> {
 		loginPrompt.appendChild(errorMessage);
 		loginPrompt.appendChild(loginButton);
 		loginWrapper.appendChild(loginPrompt);
-		
+
 		background.appendChild(loginWrapper);
 
-		loginButton.addEventListener('click', () => {
+		loginButton.addEventListener('click', async () => {
 			const username = usernameInput.value;
 			const password = passwordInput.value;
 
-			if (username === 'f' && password === 'f') {
+			const res = await fetch('http://localhost:3000/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ username, password })
+			})
+			if (res.ok) {
+				const data = await res.json();
+				console.log('Login successful, Token: ', data.token);
 				background.removeChild(loginWrapper);
 				resolve();
-			}
-			else
+			} else {
 				errorMessage.classList.remove('hidden');
+			}
 		});
 	});
 }
