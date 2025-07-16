@@ -2,7 +2,7 @@
 
 const Fastify = require('fastify');
 
-const {loginUser} = require('./user.js');
+const {loginUser, createUser, getUserByUsername } = require('./user.js');
 
 const fastify = Fastify();
 
@@ -10,12 +10,18 @@ const cors = require('@fastify/cors');
 
 const db = require('./db/db.js');
 
+const dotenv = require('dotenv');
+dotenv.config();
 
-// 🛠️ Configure CORS ici
+
 fastify.register(cors, {
-  origin: 'http://localhost:5173', // ⚠️ ton frontend (Vite ou autre)
+  origin: 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS']
+});
+
+fastify.register(require('@fastify/jwt'), {
+  secret: process.env.JWT_SECRET
 });
 
 fastify.get('/api/test', async (request, reply) => {
@@ -52,17 +58,19 @@ fastify.post('/login', async (request, reply) => {
 	const {username, password} = request.body;
 	console.log(' received data:', { username, password });
 	await createUser("rom-2001@hotmail.fr", "123456", "rostrub");
-	if (loginUser(username, password))
+	if (await loginUser(username, password) == true)
 	{
+		const user = await getUserByUsername(username);
+		const token = fastify.jwt.sign({ id: user.id, username: user.username });
 		console.log('Login successful');
-		reply.code(200).send({'token': 'fake-jwt-token'});
+		reply.send({ token });
 	}
 	else
-	{
 		reply.code(401).send({'error': 'Invalid credentials'});
-		console.log('Invalid credentials');
-	}
+})
 
+fastify.post('/changePassword', async (request, reply) => {
+	const { oldPass, newPass,  newPass2} = request.body;
 })
 
 fastify.listen({ port: 3000, host: '0.0.0.0'}, (err) => {

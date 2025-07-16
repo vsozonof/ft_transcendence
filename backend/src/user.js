@@ -6,12 +6,12 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/07/16 11:28:56 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/07/16 23:32:11 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// const db = require('./db/db.js');
-// const argon2 = require('argon2');
+const db = require('./db/db.js');
+const argon2 = require('argon2');
 
 async function getUserByUsername(username) {
 	return new Promise((resolve, reject) => {
@@ -79,39 +79,41 @@ function getUserByMail(mail) {
 }
 
 async function loginUser(email, password) {
-	console.log('test');
-	const user = getUserByUsername(email);
+	const user = await getUserByUsername(email);
 	if (!user) {
-		console.error('User not found');
+		console.log('User not found');
 		return false;
 	}
-	if (!user.activated) {
-		console.error('User not activated');
+	if (await argon2.verify(user.password, password)) {
+		console.log('Password is correct');
+		return user.activated;;
+	} else {
+		console.log('Invalid password');
 		return false;
 	}
-	if (await argon2.verify(user.password, password))
-		return true;
 	return false;
 }
 
-async function main(){
-	await createUser("rom-2001@hotmail.fr", "123456", "rostrub");
-	const user = await getUserByUsername("rostrub");
-		if (!user) {
-			console.log('Utilisateur non trouvé');
-			return;
-		}
-		else
-			console.log('Utilisateur récupéré :', user);
-	const userById = await getUserById(1);
-	if (!userById) {
-		console.log('Utilisateur non trouvé par ID');
-		return;
-	}
-	else
-		console.log('Utilisateur récupéré par ID :', userById);
-}
+// async function main(){
+// 	await createUser("rom-2001@hotmail.fr", "123456", "rostrub");
+// 	const user = await getUserByUsername("rostrub");
+// 		if (!user) {
+// 			console.log('Utilisateur non trouvé');
+// 			return;
+// 		}
+// 		else
+// 			console.log('Utilisateur récupéré :', user);
+// 	const userById = await getUserById(1);
+// 	if (!userById) {
+// 		console.log('Utilisateur non trouvé par ID');
+// 		return;
+// 	}
+// 	else
+// 		console.log('Utilisateur récupéré par ID :', userById);
+// }
 
 module.exports= {
-	loginUser
+	loginUser,
+	createUser,
+	getUserByUsername
 };
