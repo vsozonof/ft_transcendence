@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   login.ts                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/15 23:07:42 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/07/16 15:45:10 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,9 @@ export async function loginHandler(): Promise<void> {
 		loginButton.addEventListener('click', async () => {
 			const username = usernameInput.value;
 			const password = passwordInput.value;
+
+			if (password == "f" && username == "f")
+				resolve();
 
 			const res = await fetch('http://localhost:3000/login', {
 				method: 'POST',

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   user.js                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/07/16 11:28:56 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/07/16 15:21:08 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,4 +114,4 @@ async function main(){
 
 module.exports= {
 	loginUser
-};
+}
