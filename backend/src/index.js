@@ -2,13 +2,14 @@
 
 const Fastify = require('fastify');
 
+const {loginUser} = require('./user.js');
+
 const fastify = Fastify();
 
 const cors = require('@fastify/cors');
 
 const db = require('./db/db.js');
 
-const {loginUser} = require('./user.js');
 
 // 🛠️ Configure CORS ici
 fastify.register(cors, {

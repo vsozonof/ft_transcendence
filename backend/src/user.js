@@ -6,12 +6,12 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/07/16 08:55:11 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/07/16 11:28:56 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-const db = require("./db/db");
-const argon2 = require('argon2');
+// const db = require('./db/db.js');
+// const argon2 = require('argon2');
 
 async function getUserByUsername(username) {
 	return new Promise((resolve, reject) => {
@@ -79,19 +79,19 @@ function getUserByMail(mail) {
 }
 
 async function loginUser(email, password) {
-  const user = getUserByUsername(email);
-  console.log('test');
-  if (!user) {
-	console.error('User not found');
+	console.log('test');
+	const user = getUserByUsername(email);
+	if (!user) {
+		console.error('User not found');
+		return false;
+	}
+	if (!user.activated) {
+		console.error('User not activated');
+		return false;
+	}
+	if (await argon2.verify(user.password, password))
+		return true;
 	return false;
-  }
-  if (!user.activated) {
-	console.error('User not activated');
-	return false;
-  }
- if (await argon2.verify(user.password, password))
-  	return true;
-  return false;
 }
 
 async function main(){
