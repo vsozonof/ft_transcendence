@@ -69,11 +69,11 @@ fastify.post('/login', async (request, reply) => {
 		reply.code(401).send({'error': 'Invalid credentials'});
 })
 
-fastify.post('/changePassword', async (request, reply) => {
-	const { oldPass, newPass,  newPass2} = request.body;
-})
+// fastify.post('/changePassword', async (request, reply) => {
+// 	const { oldPass, newPass,  newPass2} = request.body;
+// })
 
-fastify.listen({ port: 3000, host: '0.0.0.0'}, (err) => {
+fastify.listen({ port: 3000, host: 'localhost'}, (err) => {
 	if (err) {
 		console.log(err);
 		process.exit(1);

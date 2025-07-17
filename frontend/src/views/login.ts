@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   login.ts                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/16 15:45:10 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/17 17:11:40 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { background } from "../main"
+
+import { registerHandler } from "./register"
 
 // Form de login basique, présent uniquement pour faire le lien en auth
 // et redirection vers le main menu
@@ -25,16 +27,42 @@ export async function loginHandler(): Promise<void> {
 			flex items-center justify-center
 		`;
 
+
+		const tabContainer = document.createElement('div');
+		tabContainer.className = `
+			absolute -top-1 left-0 w-full
+			flex z-30
+		`;
+
+		const loginTab = document.createElement('button');
+		loginTab.textContent = 'Login';
+		loginTab.className = `
+			flex-1
+			bg-white px-4 py-2 rounded-t-md
+			border border-gray-300 border-b-0
+			font-bold text-center
+		`;
+
+		const registerTab = document.createElement('button');
+		registerTab.textContent = 'Register';
+		registerTab.className = `
+			flex-1
+			bg-gray-200 px-4 py-2 rounded-t-md shadow
+			border border-gray-300
+			hover:bg-gray-100 transition-colors
+		`;
+
 		const loginPrompt = document.createElement('div');
 		loginPrompt.id = 'loginPrompt';
 
 		loginPrompt.className = `
+		relative
 		bg-white p-8 rounded-lg shadow-md w-80
 		flex flex-col justify-self-center
 		`;
 
 		const title = document.createElement('h2');
-		title.textContent = 'Login';
+		title.textContent = ' ';
 		title.className = 'text-2xl font-bold mb-6 text-center';
 
 		const usernameInput = document.createElement('input');
@@ -64,6 +92,9 @@ export async function loginHandler(): Promise<void> {
 		hover:bg-blue-700 transition-colors
 		`;
 
+		tabContainer.appendChild(loginTab);
+		tabContainer.appendChild(registerTab);
+		loginPrompt.appendChild(tabContainer);
 		loginPrompt.appendChild(title);
 		loginPrompt.appendChild(usernameInput);
 		loginPrompt.appendChild(passwordInput);
@@ -71,22 +102,21 @@ export async function loginHandler(): Promise<void> {
 		loginPrompt.appendChild(loginButton);
 		loginWrapper.appendChild(loginPrompt);
 
+
 		background.appendChild(loginWrapper);
 
 		loginButton.addEventListener('click', async () => {
 			const username = usernameInput.value;
 			const password = passwordInput.value;
-
-			if (password == "f" && username == "f")
-				resolve();
-
-			const res = await fetch('http://localhost:3000/login', {
+			console.log('Login attempt with:', username, password);
+			const res = await fetch('http://127.0.0.1:3000/login', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({ username, password })
 			})
+			console.log('Response status:', res.status);
 			if (res.ok) {
 				const data = await res.json();
 				console.log('Login successful, Token: ', data.token);
@@ -96,5 +126,13 @@ export async function loginHandler(): Promise<void> {
 				errorMessage.classList.remove('hidden');
 			}
 		});
+
+		registerTab.addEventListener('click', async () => {
+			background.removeChild(loginWrapper);
+			await registerHandler();
+			resolve();
+			return;
+		});
+
 	});
 }
