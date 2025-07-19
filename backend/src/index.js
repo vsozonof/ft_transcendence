@@ -48,9 +48,35 @@ fastify.get('/api/db', async (request, reply) => {
 
 
 fastify.post('/register', async (request, reply) => {
-	const { username, email,  password} = request.body;
+	const { mail, username,  password, verifPassword } = request.body;
 
-	console.log(' received data:', { username, email, password });
+	console.log(' received data:', { username, mail, password, verifPassword});
+	if (password !== verifPassword) {
+		console.log('Passwords do not match');
+		reply.code(401).send({ error: 'Passwords do not match' });
+	}
+	else if (password.length < 6) {
+		console.log('Password must be at least 6 characters long');
+		reply.code(401).send({ error: 'Password must be at least 6 characters long' });
+	}
+	else if (username.length < 3) {
+		console.log('Username must be at least 3 characters long');
+		reply.code(401).send({ error: 'Username must be at least 3 characters long' });
+	}
+	else if (!mail.includes('@') || !mail.includes('.')) {
+		console.log('Invalid email format');
+		reply.code(401).send({ error: 'Invalid email format' });
+	}
+	else {
+		try {
+			await createUser(mail, password, username);
+			console.log('User created successfully');
+			reply.send({ message: 'User created successfully' });
+		} catch (error) {
+			console.error('Error creating user:', error);
+			reply.code(500).send({ error: 'Failed to create user' });
+		}
+	}
 
 })
 
