@@ -1,6 +1,6 @@
 import { loginHandler } from "./views/login";
 import { createMainMenu } from "./views/mainMenu";
-import { startPongGame } from "./pong";
+import { createPongGame, startPongGame } from "./pong";
 
 
 const app = document.getElementById('app');
@@ -19,15 +19,15 @@ async function launchApp() {
 		return;
 	console.log('Launching app...');
 	setupBackground();
-	await loginHandler();
+	// await loginHandler();
 
 	const mainMenu = createMainMenu({
-		onPlayOnline: () => {
+		onPlay: () => {
     		mainMenu.remove();
+			const game = createPongGame();
+			background.appendChild(game.canvas);
+			game.start();
   		},
-  		onPlayAI: () => {
-			mainMenu.remove();
-		},
 		onProfile: () => {
 			mainMenu.remove();
 		},

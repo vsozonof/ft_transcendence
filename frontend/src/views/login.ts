@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   login.ts                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/19 13:52:49 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/07/21 08:29:33 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,8 +120,8 @@ export async function loginHandler(): Promise<void> {
 			if (res.ok) {
 				const data = await res.json();
 				console.log('Login successful, Token: ', data.token);
-				background.removeChild(loginWrapper);
 				resolve();
+				background.removeChild(loginWrapper);
 			} else {
 				errorMessage.classList.remove('hidden');
 			}
