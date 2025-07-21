@@ -21,9 +21,26 @@ async function launchApp() {
 	setupBackground();
 	await loginHandler();
 
-	const mainMenu = createMainMenu(() => {
-		mainMenu.remove();
-		launchApp();
+	const mainMenu = createMainMenu({
+		onPlayOnline: () => {
+    		mainMenu.remove();
+  		},
+  		onPlayAI: () => {
+			mainMenu.remove();
+		},
+		onProfile: () => {
+			mainMenu.remove();
+		},
+		onRankings: () => {
+			mainMenu.remove();
+		},
+		onSettings: () => {
+			mainMenu.remove();
+		},
+		onLogout: () => {
+			// IMPLEMENTER LOGIQUE DE LOGOUT
+			launchApp();
+		},
 	});
 
 	background.appendChild(mainMenu);

@@ -6,11 +6,20 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/05 19:25:37 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/14 03:47:50 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/18 16:35:20 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-export function createMainMenu(onLogout: () => void): HTMLElement {
+interface MainMenuCallbacks {
+	onPlayOnline: () => void;
+	onPlayAI: () => void;
+	onProfile: () => void;
+	onRankings: () => void;
+	onSettings: () => void;
+	onLogout: () => void;
+}
+
+export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	
 	const mainMenuWrapper = document.createElement('div');
 	mainMenuWrapper.className = `
@@ -31,12 +40,12 @@ export function createMainMenu(onLogout: () => void): HTMLElement {
 	title.className = 'text-2xl font-bold mb-6 text-center';
 	
 	const playOnlineButton = document.createElement('button');
-	playOnlineButton.textContent = 'Play Online';
+	playOnlineButton.textContent = 'Play';
 	playOnlineButton.className = `
 	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
 	hover:bg-blue-700 transition-colors
 	`;
-	
+
 	const playAiButton = document.createElement('button');
 	playAiButton.textContent = 'Play vs AI';
 	playAiButton.className = `
@@ -72,9 +81,7 @@ export function createMainMenu(onLogout: () => void): HTMLElement {
 	hover:bg-blue-700 transition-colors
 	`;
 	
-	logOut.addEventListener('click', () => {
-		onLogout();
-	});
+
 	
 	mainMenu.appendChild(title);
 	mainMenu.appendChild(playOnlineButton);
@@ -87,5 +94,10 @@ export function createMainMenu(onLogout: () => void): HTMLElement {
 	
 	mainMenuWrapper.appendChild(mainMenu);
 	
-	return mainMenuWrapper;
+	playOnlineButton.onclick = callbacks.onPlayOnline;
+	playAiButton.onclick = callbacks.onPlayAI;
+	profileButton.onclick = callbacks.onProfile;
+	rankingsButton.onclick = callbacks.onRankings;
+	settingsButton.onclick = callbacks.onSettings;
+	logOut.onclick = callbacks.onLogout;
 }
