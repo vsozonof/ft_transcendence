@@ -1,6 +1,6 @@
 import { loginHandler } from "./views/login";
 import { createMainMenu } from "./views/mainMenu";
-import { startPongGame } from "./pong";
+import { createPongGame, startPongGame } from "./pong";
 
 
 const app = document.getElementById('app');
@@ -19,11 +19,28 @@ async function launchApp() {
 		return;
 	console.log('Launching app...');
 	setupBackground();
-	await loginHandler();
+	// await loginHandler();
 
-	const mainMenu = createMainMenu(() => {
-		mainMenu.remove();
-		launchApp();
+	const mainMenu = createMainMenu({
+		onPlay: () => {
+    		mainMenu.remove();
+			const game = createPongGame();
+			background.appendChild(game.canvas);
+			game.start();
+  		},
+		onProfile: () => {
+			mainMenu.remove();
+		},
+		onRankings: () => {
+			mainMenu.remove();
+		},
+		onSettings: () => {
+			mainMenu.remove();
+		},
+		onLogout: () => {
+			// IMPLEMENTER LOGIQUE DE LOGOUT
+			launchApp();
+		},
 	});
 
 	background.appendChild(mainMenu);

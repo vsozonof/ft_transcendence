@@ -6,11 +6,19 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/05 19:25:37 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/14 03:47:50 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/21 08:10:17 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-export function createMainMenu(onLogout: () => void): HTMLElement {
+interface MainMenuCallbacks {
+	onPlay: () => void;
+	onProfile: () => void;
+	onRankings: () => void;
+	onSettings: () => void;
+	onLogout: () => void;
+}
+
+export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	
 	const mainMenuWrapper = document.createElement('div');
 	mainMenuWrapper.className = `
@@ -30,20 +38,13 @@ export function createMainMenu(onLogout: () => void): HTMLElement {
 	title.textContent = 'Main Menu';
 	title.className = 'text-2xl font-bold mb-6 text-center';
 	
-	const playOnlineButton = document.createElement('button');
-	playOnlineButton.textContent = 'Play Online';
-	playOnlineButton.className = `
+	const playButton = document.createElement('button');
+	playButton.textContent = 'Play';
+	playButton.className = `
 	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
 	hover:bg-blue-700 transition-colors
 	`;
-	
-	const playAiButton = document.createElement('button');
-	playAiButton.textContent = 'Play vs AI';
-	playAiButton.className = `
-	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
-	hover:bg-blue-700 transition-colors
-	`;
-	
+
 	const rankingsButton = document.createElement('button');
 	rankingsButton.textContent = 'Rankings';
 	rankingsButton.className = `
@@ -72,14 +73,10 @@ export function createMainMenu(onLogout: () => void): HTMLElement {
 	hover:bg-blue-700 transition-colors
 	`;
 	
-	logOut.addEventListener('click', () => {
-		onLogout();
-	});
+
 	
 	mainMenu.appendChild(title);
-	mainMenu.appendChild(playOnlineButton);
-	mainMenu.appendChild(playAiButton);
-	
+	mainMenu.appendChild(playButton);
 	mainMenu.appendChild(profileButton);
 	mainMenu.appendChild(rankingsButton);
 	mainMenu.appendChild(settingsButton);
@@ -87,5 +84,11 @@ export function createMainMenu(onLogout: () => void): HTMLElement {
 	
 	mainMenuWrapper.appendChild(mainMenu);
 	
+	playButton.onclick = callbacks.onPlay;	
+	profileButton.onclick = callbacks.onProfile;
+	rankingsButton.onclick = callbacks.onRankings;
+	settingsButton.onclick = callbacks.onSettings;
+	logOut.onclick = callbacks.onLogout;
+
 	return mainMenuWrapper;
 }
