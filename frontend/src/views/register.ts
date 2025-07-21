@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 23:46:36 by rostrub           #+#    #+#             */
-/*   Updated: 2025/07/19 13:46:36 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/07/19 18:03:12 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,12 @@ export async function registerHandler(): Promise<void> {
 			const username = usernameInput.value;
 			const password = passInput.value;
 			const verifPassword = verifPassInput.value;
-			console.log("registration with : ", mail, username, password, verifPassword);
+			if (!mail || !username || !password || !verifPassword) {
+				errorMessage.classList.remove('hidden');
+				errorMessage.textContent = 'Please fill in all fields';
+				return;
+			}
+			console.log("registration");
 			const res = await fetch('http://127.0.0.1:3000/register', {
 				method: 'POST',
 				headers: {

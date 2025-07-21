@@ -83,7 +83,6 @@ fastify.post('/register', async (request, reply) => {
 fastify.post('/login', async (request, reply) => {
 	const {username, password} = request.body;
 	console.log(' received data:', { username, password });
-	await createUser("rom-2001@hotmail.fr", "123456", "rostrub");
 	if (await loginUser(username, password) == true)
 	{
 		const user = await getUserByUsername(username);
