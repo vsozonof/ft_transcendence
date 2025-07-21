@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 23:46:36 by rostrub           #+#    #+#             */
-/*   Updated: 2025/07/17 17:11:33 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/07/19 13:46:36 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,10 @@ export async function registerHandler(): Promise<void> {
 		focus:outline-none focus:ring-2 focus:ring-blue-500
 		`;
 
+		const errorMessage = document.createElement('div');
+		errorMessage.className = 'text-red-500 text-sm mb-2 hidden';
+		errorMessage.textContent = 'Invalid input data';
+
 		const registerButton = document.createElement('button');
 		registerButton.textContent = 'Register';
 		registerButton.className = `
@@ -112,6 +116,7 @@ export async function registerHandler(): Promise<void> {
 		registerPrompt.appendChild(usernameInput);
 		registerPrompt.appendChild(passInput);
 		registerPrompt.appendChild(verifPassInput);
+		registerPrompt.appendChild(errorMessage);
 		registerPrompt.appendChild(registerButton);
 		registerWrapper.appendChild(registerPrompt);
 
@@ -122,6 +127,25 @@ export async function registerHandler(): Promise<void> {
 			const username = usernameInput.value;
 			const password = passInput.value;
 			const verifPassword = verifPassInput.value;
+			console.log("registration with : ", mail, username, password, verifPassword);
+			const res = await fetch('http://127.0.0.1:3000/register', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ mail, username, password, verifPassword })
+		});
+			console.log('Response status:', res.status);
+			if (res.ok) {
+				const data = await res.json();
+				console.log('Registration successful:', data);
+				background.removeChild(registerWrapper);
+				await loginHandler();
+				resolve();
+			} else {
+				errorMessage.classList.remove('hidden');
+				errorMessage.textContent = (await res.json()).error || 'Registration failed';
+			}
 		});
 
 		loginTab.addEventListener('click', async () => {
