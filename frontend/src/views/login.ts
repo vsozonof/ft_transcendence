@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   login.ts                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/21 08:29:33 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/21 16:08:48 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,11 @@ export async function loginHandler(): Promise<void> {
 			const username = usernameInput.value;
 			const password = passwordInput.value;
 			console.log('Login attempt');
+			if (!username || !password) {
+				errorMessage.classList.remove('hidden');
+				errorMessage.textContent = 'Please fill in all fields';
+				return;
+			}
 			const res = await fetch('http://127.0.0.1:3000/login', {
 				method: 'POST',
 				headers: {
@@ -124,6 +129,7 @@ export async function loginHandler(): Promise<void> {
 				background.removeChild(loginWrapper);
 			} else {
 				errorMessage.classList.remove('hidden');
+				errorMessage.textContent = (await res.json()).error || 'Login failed';
 			}
 		});
 
