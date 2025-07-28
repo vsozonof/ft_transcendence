@@ -1,6 +1,6 @@
 import { loginHandler } from "./views/login";
 import { createMainMenu } from "./views/mainMenu";
-import { createPongGame, startPongGame } from "./pong";
+import { createPongGame } from "./game/pong";
 
 
 const app = document.getElementById('app');
@@ -8,7 +8,7 @@ export const background = document.createElement('div');
 
 function setupBackground() {
 	background.id = 'background';
-	background.className = 'fixed inset-0 bg-cover bg-center';
+	background.className = 'fixed inset-0 bg-cover bg-center flex items-center justify-center';
 	background.style.backgroundImage = "url('/assets/bg.jpg')";
 
 	app?.appendChild(background);
@@ -26,7 +26,7 @@ async function launchApp() {
     		mainMenu.remove();
 			const game = createPongGame();
 			background.appendChild(game.canvas);
-			game.start();
+			game.initGame();
   		},
 		onProfile: () => {
 			mainMenu.remove();
