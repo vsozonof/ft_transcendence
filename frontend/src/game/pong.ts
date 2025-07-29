@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/29 14:38:48 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/29 15:41:54 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,12 @@ export function createPongGame(): PongGame {
 		player2Ready: false,
 	};
 
+	let aiAction: 'stop' | 'up' | 'down' = 'stop';
+	if (gameState.gameMode === 'AI') {
+		setInterval(() => {
+			// aiAction = DecideAction(ball, paddle2);
+		}, 1000);
+	}
 	
 	const { paddle1,
 			paddle2 } 		= createPaddles(ctx);

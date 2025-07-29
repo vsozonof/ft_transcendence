@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:28:44 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/29 14:39:13 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/29 15:34:45 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 		speedIncr: 0.1,
 		radius: 10,
 		color: 'white',
+		nextDirection: undefined as number | undefined,
 		
 		// ? Draws the ball on the canvas
 		draw() {
@@ -36,8 +37,25 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 		},
 		
 		start() {
-			this.vx = this.baseSpeed;
-			this.vy = this.baseSpeed;
+			let dirX: number;
+
+			if (this.nextDirection !== undefined) {
+				dirX = this.nextDirection;	
+			} else {
+				if (Math.random() > 0.5) {
+					dirX = 1;
+				}
+				else {
+					dirX = -1;
+				}
+			}
+
+			const dirY = Math.random() > 0.5 ? 1 : -1;
+
+			this.vx = dirX * this.baseSpeed;
+			this.vy = dirY * this.baseSpeed;
+			
+			this.nextDirection = undefined;
 		},
 
 		// ? Resets the ball's position to the center of the canvas
@@ -73,7 +91,18 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 
 			if (isBallApproachingPaddle1 && collidesWithPaddle1) {
 				this.x = paddle1.x + paddle1.width + this.radius;
-				this.vx = -this.vx;
+				const paddleCenter = paddle1.y + paddle1.height / 2;
+				const relativeIntersectY = this.y - paddleCenter;
+				const normalized = relativeIntersectY / (paddle1.height / 2);
+
+				const maxBounceAngle = Math.PI / 3;
+				const bounceAngle = normalized * maxBounceAngle;
+
+				const speed = Math.sqrt(this.vx ** 2 + this.vy ** 2);
+
+				this.vx = Math.abs(speed * Math.cos(bounceAngle));
+				this.vy = speed * Math.sin(bounceAngle);
+
 				this.increaseSpeed();
 			}
 
@@ -86,17 +115,31 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 
 			if (isBallApproachingPaddle2 && collidesWithPaddle2) {
 				this.x = paddle2.x - this.radius;
-				this.vx = -this.vx;
+
+				const paddleCenter = paddle2.y + paddle2.height / 2;
+				const relativeIntersectY = this.y - paddleCenter;
+				const normalized = relativeIntersectY / (paddle2.height / 2);
+
+				const maxBounceAngle = Math.PI / 3;
+				const bounceAngle = normalized * maxBounceAngle;
+
+				const speed = Math.sqrt(this.vx ** 2 + this.vy ** 2);
+
+				this.vx = -Math.abs(speed * Math.cos(bounceAngle));
+				this.vy = speed * Math.sin(bounceAngle);
+
 				this.increaseSpeed();
 			}
 
 			// ? Handles scoring
 			if (this.x + this.radius < 0) {
 				gameState.score2++;
+				ball.nextDirection = -1;
 				onScore();
 			}
 			if (this.x - this.radius > ctx.canvas.width) {
 				gameState.score1++;
+				ball.nextDirection = 1;
 				onScore();
 			}
 		},
@@ -105,8 +148,8 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 		// ? -> This makes the game progressively more challenging
 		// ? -> Speed increased by 10% each time
 		increaseSpeed() {
-			ball.vx *= 1.2;
-			ball.vy *= 1.2;
+			ball.vx *= 1.1;
+			ball.vy *= 1.1;
 		}
 	};
 
