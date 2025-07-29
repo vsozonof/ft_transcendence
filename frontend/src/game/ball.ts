@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:28:44 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/28 14:29:01 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/29 14:39:13 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,14 @@
 // ? -> The ball has properties for position, velocity, radius, and color
 // ? -> It also has methods to draw itself, reset its position, and update its state
 // ? -> The ball handles collisions with the paddles and walls, and scoring
-function createBall(ctx, paddle1, paddle2, gameState) {
+function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 	const ball = {
 		x: ctx.canvas.width / 2,
 		y: ctx.canvas.height / 2,
 		vx: 0.5,
 		vy: 0.5,
+		baseSpeed: 0.6,
+		speedIncr: 0.1,
 		radius: 10,
 		color: 'white',
 		
@@ -33,11 +35,17 @@ function createBall(ctx, paddle1, paddle2, gameState) {
 			ctx.fill();
 		},
 		
+		start() {
+			this.vx = this.baseSpeed;
+			this.vy = this.baseSpeed;
+		},
+
 		// ? Resets the ball's position to the center of the canvas
-		// ! Should add a timer to delay the ball respawn
 		reset() {
 			this.x = ctx.canvas.width / 2;
 			this.y = ctx.canvas.height / 2;
+			this.vx = 0;
+			this.vy = 0;
 		},
 
 		update() {
@@ -66,6 +74,7 @@ function createBall(ctx, paddle1, paddle2, gameState) {
 			if (isBallApproachingPaddle1 && collidesWithPaddle1) {
 				this.x = paddle1.x + paddle1.width + this.radius;
 				this.vx = -this.vx;
+				this.increaseSpeed();
 			}
 
 			const isBallApproachingPaddle2 = this.vx > 0;
@@ -78,17 +87,26 @@ function createBall(ctx, paddle1, paddle2, gameState) {
 			if (isBallApproachingPaddle2 && collidesWithPaddle2) {
 				this.x = paddle2.x - this.radius;
 				this.vx = -this.vx;
+				this.increaseSpeed();
 			}
 
 			// ? Handles scoring
 			if (this.x + this.radius < 0) {
 				gameState.score2++;
-				this.reset();
+				onScore();
 			}
 			if (this.x - this.radius > ctx.canvas.width) {
 				gameState.score1++;
-				this.reset();
+				onScore();
 			}
+		},
+
+		// ? Increases the ball's speed after each paddle hit
+		// ? -> This makes the game progressively more challenging
+		// ? -> Speed increased by 10% each time
+		increaseSpeed() {
+			ball.vx *= 1.2;
+			ball.vy *= 1.2;
 		}
 	};
 

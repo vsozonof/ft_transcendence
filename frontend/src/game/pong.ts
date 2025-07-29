@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/28 14:56:17 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/29 14:38:48 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,6 @@ import { 	createCanvas,
 
 export interface PongGame {
 	canvas: HTMLCanvasElement;
-	start: () => void;
-	stop: () => void;
-	restart: () => void;
 	initGame: () => void;
 }
 
@@ -50,12 +47,14 @@ export function createPongGame(): PongGame {
 	
 	const { paddle1,
 			paddle2 } 		= createPaddles(ctx);
-	const 	ball 			= createBall(ctx, paddle1, paddle2, gameState);
+	const 	ball 			= createBall(ctx, paddle1, paddle2, gameState, onScore);
 	const 	keysPressed 	= keyHandler();
-		
-	ball.vx = 55;
-	ball.vy = 55;
-
+	
+	
+	// ? _________________
+	// ? draw()
+	// ? -> Clears the canvas and redraws the paddles, ball, and score
+	// ? -> This function is called in the update() loop to refresh the game state
 	function draw() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		drawScore(ctx, gameState);
@@ -64,26 +63,17 @@ export function createPongGame(): PongGame {
 		ball.draw();
 	}
 	
-	function update() {
-		if	(checkForWinner(ctx, gameState))
-			return;
-		checkKeyPresses(keysPressed, paddle1, paddle2, ctx, gameState);
-		ball.update();
-		draw();
-		animationId = requestAnimationFrame(update);
-	}
-
-	function start() {
-		ball.reset();
-		update();
-	}
-
-	function startCountdown() {
+	// ? _________________
+	// ? startCountdown()
+	// ? -> Displays a countdown before the game starts or after a score
+	// ? -> if flag is true, will start the update() loop
+	// ? -> if flag is false, will start the ball movement
+	function startCountdown(flag) {
 		let count = 3;
 
 		const countdown = document.createElement('div');
 		countdown.className = `
-			absolute top-1/2 left-1/2 
+			absolute top-1/3 left-1/2 
 			-translate-x-1/2 -translate-y-1/2 
 			text-white text-6xl font-bold z-50
 		`;
@@ -93,36 +83,46 @@ export function createPongGame(): PongGame {
 		const interval = setInterval(() => {
 			count--;
 			if (count > 0) {
-			countdown.textContent = count.toString();
+				countdown.textContent = count.toString();
 			} else {
-			clearInterval(interval);
-			countdown.remove();
-			start();
+				clearInterval(interval);
+				countdown.remove();
+				if (flag)
+					update();
+				else {
+					paddle1.locked = false;
+					paddle2.locked = false;
+					ball.start();
+				}
 			}
 		}, 1000);
 	}
 
 	async function initGame() {
 		await showReadyScreen(ctx, gameState);
-		startCountdown();
+		startCountdown(1);
 	}
 
-	function stop() {
-		cancelAnimationFrame(animationId);
-	}
-
-	function restart() {
-		gameState.score1 = 0;
-		gameState.score2 = 0;
+	function onScore() {
 		ball.reset();
-		start();
+		paddle1.reset();
+		paddle2.reset();
+		paddle1.locked = true;
+		paddle2.locked = true;
+		startCountdown(0);
+	}
+
+	function update() {
+		if	(checkForWinner(ctx, gameState))
+			return;
+		checkKeyPresses(keysPressed, paddle1, paddle2, ctx, gameState);
+		ball.update();
+		draw();
+		animationId = requestAnimationFrame(update);
 	}
 
 	return {
 		canvas,
-		start,
-		stop,
-		restart,
 		initGame,
 	};
 }

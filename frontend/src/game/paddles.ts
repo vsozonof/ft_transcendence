@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:27:16 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/28 14:27:48 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/29 14:33:34 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,16 @@ function createPaddles(ctx) {
 		height: paddleHeight,
 		speed: paddleSpeed,
 		color: 'white',
+		locked: false,
 		
 		draw() {
 			ctx.fillStyle = this.color;
 			ctx.fillRect(this.x, this.y, this.width, this.height);
+		},
+
+		reset() {
+			this.x = 20;
+			this.y = ctx.canvas.height / 2 - paddleHeight / 2;
 		},
 	};
 
@@ -41,10 +47,16 @@ function createPaddles(ctx) {
 		height: paddleHeight,
 		speed: paddleSpeed,
 		color: 'white',
+		locked: false,
 		
 		draw() {
 			ctx.fillStyle = this.color;
 			ctx.fillRect(this.x, this.y, this.width, this.height);
+		},
+
+		reset() {
+			this.x = ctx.canvas.width - 20 - paddleWidth;
+			this.y = ctx.canvas.height / 2 - paddleHeight / 2;
 		},
 	};
 
