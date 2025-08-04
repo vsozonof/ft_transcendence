@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:28:44 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/29 15:34:45 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/07/30 15:03:05 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 
 			if (isBallApproachingPaddle1 && collidesWithPaddle1) {
 				this.x = paddle1.x + paddle1.width + this.radius;
+				
 				const paddleCenter = paddle1.y + paddle1.height / 2;
 				const relativeIntersectY = this.y - paddleCenter;
 				const normalized = relativeIntersectY / (paddle1.height / 2);

@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/29 15:41:54 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/08/04 11:27:16 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ import { 	createCanvas,
 			checkKeyPresses, 
 			keyHandler, 
 			checkForWinner, showReadyScreen } from "./utils";
+import { decideAction } from "./ai";
 
 export interface PongGame {
 	canvas: HTMLCanvasElement;
@@ -39,15 +40,23 @@ export function createPongGame(): PongGame {
 		score1: 0,
 		score2: 0,
 		scoreLimit: 5,
-		gameMode: 'local' as 'local' | 'AI' | 'multiplayer',
+		gameMode: 'AI' as 'local' | 'AI' | 'multiplayer',
 		player1Ready: false,
 		player2Ready: false,
 	};
 
-	let aiAction: 'stop' | 'up' | 'down' = 'stop';
+
+	let aiAction = {
+		direction: undefined as 'up' | 'down' | 'stop' | undefined,
+		stepsRemaining: 0,
+	}
+	
 	if (gameState.gameMode === 'AI') {
 		setInterval(() => {
-			// aiAction = DecideAction(ball, paddle2);
+			const decision = decideAction(ball, paddle2, ctx);
+			aiAction.direction = decision.direction;
+			aiAction.stepsRemaining = Math.abs(decision.stepsNeeded);
+			console.log(`AI decided to move: ${aiAction.direction} for ${aiAction.stepsRemaining} steps`);
 		}, 1000);
 	}
 	
@@ -121,7 +130,7 @@ export function createPongGame(): PongGame {
 	function update() {
 		if	(checkForWinner(ctx, gameState))
 			return;
-		checkKeyPresses(keysPressed, paddle1, paddle2, ctx, gameState);
+		checkKeyPresses(keysPressed, paddle1, paddle2, ctx, gameState, aiAction);
 		ball.update();
 		draw();
 		animationId = requestAnimationFrame(update);

@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/29 14:36:27 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/08/04 11:26:44 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,22 +64,43 @@ function keyHandler() {
 // ? -> Checks for key presses to move the paddles
 // ? -> Updates the paddles' positions based on the keys pressed
 // ? -> Will lock paddle2 if gamemode is not 'local'
-function checkKeyPresses(keysPressed, paddle1, paddle2, ctx, gameState) {
+function checkKeyPresses(keysPressed, paddle1, paddle2, ctx, gameState, aiAction) {
 	if (!paddle1.locked && !paddle2.locked) {
 		if ((keysPressed['s'] || keysPressed['S']) && paddle1.y + paddle1.height < ctx.canvas.height) 
 			paddle1.y += paddle1.speed;
 
 		if ((keysPressed['w'] || keysPressed['W']) && paddle1.y > 0)
 			paddle1.y -= paddle1.speed;
+		
+		if (gameState.gameMode === 'local') {
+			if (keysPressed['ArrowDown'] && paddle2.y + paddle2.height < ctx.canvas.height)
+				paddle2.y += paddle2.speed;
 
-		if (keysPressed['ArrowDown'] && paddle2.y + paddle2.height < ctx.canvas.height && gameState.gameMode === 'local')
-			paddle2.y += paddle2.speed;
-
-		if (keysPressed['ArrowUp'] && paddle2.y > 0 && gameState.gameMode === 'local')
-			paddle2.y -= paddle2.speed;
-	}
+			if (keysPressed['ArrowUp'] && paddle2.y > 0)
+				paddle2.y -= paddle2.speed;
+		}
+		else if (gameState.gameMode === 'AI') {
+			console.log("i pass here");
+			console.log(`Steps remaining: ${aiAction.stepsRemaining}`);
+			if (aiAction.stepsRemaining > 0) {
+				console.log("i enter here");
+				console.log(`AI is moving ${aiAction.direction} for ${aiAction.stepsRemaining} steps`);
+				if (aiAction.direction === "up" && paddle2.y > 0) {
+					console.log("i move up");
+					paddle2.y -= paddle2.speed;
+				}
+				else if (aiAction.direction === "down" && paddle2.y + paddle2.height < ctx.canvas.height) {
+					console.log("i move down");
+					paddle2.y += paddle2.speed;
+				}
+				aiAction.stepsRemaining -= 1;
+			}
+		}
+		else if (gameState.gameMode === 'multiplayer') {
+			// define multiplayer controls here
+			}
+		}
 }
-
 
 function showReadyScreen(ctx, gameState): Promise<void> {
   return new Promise((resolve) => {
