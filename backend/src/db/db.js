@@ -18,6 +18,8 @@ db.serialize(() => {
       username TEXT UNIQUE NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
+      secret2fa TEXT,
+      is2fa BOOLEAN DEFAULT FALSE,
       loose INTEGER DEFAULT 0,
       win INTEGER DEFAULT 0,
       activated BOOLEAN DEFAULT TRUE

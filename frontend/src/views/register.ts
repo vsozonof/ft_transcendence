@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 23:46:36 by rostrub           #+#    #+#             */
-/*   Updated: 2025/07/19 18:03:12 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/04 12:05:13 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@ import { background } from "../main"
 import { loginHandler } from "./login"
 
 // Form de login basique, présent uniquement pour faire le lien en auth
-// et redirection vers le main menu
+// et redirection vers le m ain menu
 // -> il te reste pas mal de chose à faire dessus:
 // (ex: design, liaison backend, redirection propre vers main menu, gestion d'erreur...)
 
@@ -147,6 +147,7 @@ export async function registerHandler(): Promise<void> {
 				background.removeChild(registerWrapper);
 				await loginHandler();
 				resolve();
+				return;
 			} else {
 				errorMessage.classList.remove('hidden');
 				errorMessage.textContent = (await res.json()).error || 'Registration failed';

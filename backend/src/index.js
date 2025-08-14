@@ -2,7 +2,7 @@
 
 const Fastify = require('fastify');
 
-const {loginUser, createUser, getUserByUsername } = require('./user.js');
+const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa } = require('./user.js');
 
 const fastify = Fastify();
 
@@ -11,6 +11,7 @@ const cors = require('@fastify/cors');
 const db = require('./db/db.js');
 
 const dotenv = require('dotenv');
+const speakeasy = require('speakeasy');
 dotenv.config();
 
 
@@ -94,9 +95,196 @@ fastify.post('/login', async (request, reply) => {
 		reply.code(401).send({'error': 'Invalid credentials'});
 })
 
-// fastify.post('/changePassword', async (request, reply) => {
-// 	const { oldPass, newPass,  newPass2} = request.body;
-// })
+fastify.post('/changePassword', async (request, reply) => {
+	const { oldPassword, newPassword, confirmPassword } = request.body;
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token)
+		return reply.code(401).send({ error: 'Token is required' });
+	const decoded = fastify.jwt.verify(token);
+	const user = await getUserByUsername(decoded.username);
+	if (!user) {
+		return reply.code(404).send({ error: 'User not found' });
+	}
+	try {
+		await ChangePassword(user.id, oldPassword, newPassword, confirmPassword);
+		reply.send({ message: 'Password changed successfully' });
+	} catch (error) {
+		reply.code(401).send({ error: 'Invalid old password or new passwords do not match' });
+	}
+});
+
+fastify.get('/getUser', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	try {
+		const decoded = fastify.jwt.verify(token);
+		const user = await getUserByUsername(decoded.username);
+		if (!user) {
+			return reply.code(404).send({ error: 'User not found' });
+		}
+		reply.send({ id: user.id, username: user.username, email: user.email });
+	} catch (err) {
+		console.error('Error verifying token:', err);
+		reply.code(401).send({ error: 'Invalid token' });
+	}
+});
+
+fastify.post('/getUserByUsername', async (request, reply) => {
+	const { username } = request.body;
+	console.log('Received request to get user by username:', username);
+	if (!username) {
+		return reply.code(400).send({ error: 'Username is required' });
+	}
+	const user = await getUserByUsername(username);
+	if (!user) {
+		return reply.code(404).send({ error: 'User not found' });
+	}
+	reply.send({ id: user.id, username: user.username, email: user.email, is2fa: user.is2fa });
+});
+
+fastify.get('/isit2fa', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	try {
+		console.log('Verifying token:', token);
+		const decoded = fastify.jwt.verify(token);
+		const user = await getUserByUsername(decoded.username);
+		if (!user) {
+			return reply.code(404).send({ error: 'User not found' });
+		}
+		let is2fa = await is2faEnabled(user.username);
+		console.log('2FA status:', is2fa);
+		reply.send({ is2fa });
+	}catch (err) {
+		console.error('Error verifying token:', err);
+		reply.code(401).send({ error: 'Invalid token' });
+	}
+});
+
+fastify.get('/create2faqrcode', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	try {
+		const decoded = fastify.jwt.verify(token);
+		const user = await getUserByUsername(decoded.username);
+		if (!user) {
+			return reply.code(404).send({ error: 'User not found' });
+		}
+		if (user.is2fa) {
+			return reply.code(400).send({ error: '2FA is already enabled' });
+		}
+		const qrcode = await create2faqrcode(user.username);
+		console.log('2FA QR code created for user:', user.username);
+		reply.send({ qrcode });
+	} catch (err) {
+		console.error('Error creating 2FA QR code:', err);
+		reply.code(500).send({ error: 'Failed to create 2FA QR code' });
+	}
+});
+
+fastify.post('/activation-2fa', async (request, reply) => {
+	const { OTP } = request.body;
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	try {
+		const decoded = fastify.jwt.verify(token);
+		const user = await getUserByUsername(decoded.username);
+		if (!user) {
+			return reply.code(404).send({ error: 'User not found' });
+		}
+		console.log('Received OTP:', OTP);
+		console.log('user secret2fa:', user.secret2fa);
+		const isValid = speakeasy.totp.verify({
+			secret: user.secret2fa,
+			encoding: 'base32',
+			token: OTP,
+			window: 1 // Allow a small time window for clock drift
+		});
+		console.log('2FA verification result:', isValid);
+		if (isValid) {
+		{
+			console.log('2FA verification successful for user:', user.username);
+			reply.send({ message: '2FA verification successful' });
+			db.serialize(() => {
+				db.run(`UPDATE users SET is2fa = 1 WHERE id = ?`, [user.id], (err) => {
+					if (err) {
+						console.error('Error updating user 2FA status:', err.message);
+					} else {
+						console.log('User 2FA status updated successfully');
+					}
+				});
+			});
+			return;
+		}
+		} else {
+			reply.code(401).send({ error: 'Invalid OTP' });
+		}
+	}
+	catch (err) {
+		console.error('Error during 2FA activation:', err);
+		reply.code(500).send({ error: 'Failed to activate 2FA' });
+	}
+});
+
+fastify.post('/disable2fa' , async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	const key = request.body.key;
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	const user = await getUserByUsername(fastify.jwt.verify(token).username);
+	if (!user) {
+		return reply.code(404).send({ error: 'User not found' });
+	}
+	try {
+		await disable2fa(user, key);
+		reply.send({ message: '2FA disabled successfully' });
+	} catch (err) {
+		reply.code(500).send({ error: 'Failed to disable 2FA' });
+	}
+});
+
+fastify.post('/tfaLogin', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	const { key } = request.body;
+	console.log('Received 2FA login request with key:', key);
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	try {
+		const decoded = fastify.jwt.verify(token);
+		const user = await getUserByUsername(decoded.username);
+		if (!user) {
+			return reply.code(404).send({ error: 'User not found' });
+		}
+		const isValid = speakeasy.totp.verify({
+			secret: user.secret2fa,
+			encoding: 'base32',
+			token: key,
+			window: 1
+		});
+		if (isValid) {
+			console.log('2FA login successful for user:', user.username);
+			reply.send({ message: '2FA login successful' });
+		} else {
+			reply.code(401).send({ error: 'Invalid 2FA key' });
+		}
+	} catch (err) {
+		console.error('Error during 2FA login:', err);
+		reply.code(500).send({ error: 'Failed to login with 2FA' });
+	}
+});
+
+// fastify.post('2faSetup', async (request, reply) => {
+// 	const { username } = request.body;
 
 fastify.listen({ port: 3000, host: 'localhost'}, (err) => {
 	if (err) {
