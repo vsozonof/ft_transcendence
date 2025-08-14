@@ -1,4 +1,5 @@
 import { loginHandler } from "./views/login";
+import { profileHandler } from "./views/profil";
 import { createMainMenu } from "./views/mainMenu";
 import { createPongGame } from "./game/pong";
 
@@ -14,12 +15,14 @@ function setupBackground() {
 	app?.appendChild(background);
 }
 
-async function launchApp() {
+export async function launchApp() {
 	if (!app)
 		return;
 	console.log('Launching app...');
 	setupBackground();
-	// await loginHandler();
+	if (!localStorage.getItem('token')) {
+		await loginHandler();
+	}
 
 	const mainMenu = createMainMenu({
 		onPlay: () => {
@@ -30,6 +33,7 @@ async function launchApp() {
   		},
 		onProfile: () => {
 			mainMenu.remove();
+			profileHandler();
 		},
 		onRankings: () => {
 			mainMenu.remove();
@@ -38,8 +42,8 @@ async function launchApp() {
 			mainMenu.remove();
 		},
 		onLogout: () => {
-			// IMPLEMENTER LOGIQUE DE LOGOUT
-			launchApp();
+			localStorage.removeItem('token');
+			location.reload(); // Reload the page to reset the app state
 		},
 	});
 

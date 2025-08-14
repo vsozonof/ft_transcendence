@@ -6,13 +6,17 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/21 16:08:48 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/14 09:33:05 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { background } from "../main"
 
 import { registerHandler } from "./register"
+
+import {tfa_handler} from "./2falogin"
+
+import { profileHandler } from "./profil"
 
 // Form de login basique, présent uniquement pour faire le lien en auth
 // et redirection vers le main menu
@@ -114,22 +118,43 @@ export async function loginHandler(): Promise<void> {
 				errorMessage.textContent = 'Please fill in all fields';
 				return;
 			}
-			const res = await fetch('http://127.0.0.1:3000/login', {
+			const user = await fetch('http://127.0.0.1:3000/getUserByUsername', {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
 				},
-				body: JSON.stringify({ username, password })
-			})
-			console.log('Response status:', res.status);
-			if (res.ok) {
-				const data = await res.json();
-				console.log('Login successful, Token: ', data.token);
-				resolve();
-				background.removeChild(loginWrapper);
+				body: JSON.stringify({ username })
+			});
+			if (user.ok) {
+				const userData = await user.json();
+				console.log('User data:', userData);
+				let res = await fetch('http://127.0.0.1:3000/login', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ username, password })
+				});
+				if (res.ok) {
+					const data = await res.json();
+					localStorage.setItem('token', data.token);
+					if (userData.is2fa == true) {
+						background.removeChild(loginWrapper);
+						await tfa_handler();
+						resolve();
+					} else {
+						background.removeChild(loginWrapper);
+						resolve();
+						return;
+					}
+				} else {
+					errorMessage.classList.remove('hidden');
+					errorMessage.textContent = 'Invalid username or password';
+				}
 			} else {
 				errorMessage.classList.remove('hidden');
-				errorMessage.textContent = (await res.json()).error || 'Login failed';
+				errorMessage.textContent = 'Invalid username or password';
 			}
 		});
 
@@ -137,7 +162,6 @@ export async function loginHandler(): Promise<void> {
 			background.removeChild(loginWrapper);
 			await registerHandler();
 			resolve();
-			return;
 		});
 
 	});
