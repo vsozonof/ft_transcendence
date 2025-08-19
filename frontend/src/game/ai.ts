@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/29 15:38:28 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/04 12:14:06 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/08/06 13:31:21 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,11 +45,8 @@ function decideAction(ball, paddle2, ctx) {
 		console.log('Ball is moving towards paddle2');
 		return calculateBallTrajectory(gameData);
 	}
-	else if (gameData.ballVx < 0) {
-		console.log('Ball is moving towards paddle1');
+	else if (gameData.ballVx < 0)
 		return { direction: 'stop', stepsNeeded: 0 };
-	}
-	
 }
 
 function calculateBallTrajectory(gameData) {
@@ -62,7 +59,9 @@ function calculateBallTrajectory(gameData) {
 		
 		gameData.impactY = gameData.newBallY;
 		const delta = gameData.impactY - gameData.paddleCenter;
-		const stepsNeeded = Math.round(delta / gameData.paddleSpeed);
+		let stepsNeeded = Math.round(delta / gameData.paddleSpeed);
+		const offset = Math.floor(Math.random() * 11) - 5;
+		stepsNeeded += offset;
 		
 		if (stepsNeeded > 0)
 			gameData.direction = 'down';
