@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   login.ts                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/14 09:33:05 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/17 18:22:12 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,6 @@ import { registerHandler } from "./register"
 import {tfa_handler} from "./2falogin"
 
 import { profileHandler } from "./profil"
-
-// Form de login basique, présent uniquement pour faire le lien en auth
-// et redirection vers le main menu
-// -> il te reste pas mal de chose à faire dessus:
-// (ex: design, liaison backend, redirection propre vers main menu, gestion d'erreur...)
 
 export async function loginHandler(): Promise<void> {
 	return new Promise((resolve, reject) => {

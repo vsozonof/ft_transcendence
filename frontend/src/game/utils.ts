@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/04 11:26:44 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/08/17 16:34:32 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ function keyHandler() {
 // ? -> Checks for key presses to move the paddles
 // ? -> Updates the paddles' positions based on the keys pressed
 // ? -> Will lock paddle2 if gamemode is not 'local'
+// ? -> The function will handle the AI movements aswell
 function checkKeyPresses(keysPressed, paddle1, paddle2, ctx, gameState, aiAction) {
 	if (!paddle1.locked && !paddle2.locked) {
 		if ((keysPressed['s'] || keysPressed['S']) && paddle1.y + paddle1.height < ctx.canvas.height) 

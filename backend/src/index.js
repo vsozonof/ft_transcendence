@@ -5,6 +5,7 @@ const Fastify = require('fastify');
 const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa } = require('./user.js');
 
 const fastify = Fastify();
+const webSocketPlugin = require('@fastify/websocket')
 
 const cors = require('@fastify/cors');
 
@@ -14,6 +15,24 @@ const dotenv = require('dotenv');
 const speakeasy = require('speakeasy');
 dotenv.config();
 
+// ! WebSocket -> MultiPlayer handler
+fastify.register(webSocketPlugin);
+
+fastify.get('/game', { websocket: true }, (connection, req) => {
+  console.log('New WS connection');
+	connection.send('HELLLLLLLLLLLO');
+
+  connection.socket.on('message', (message) => {
+    console.log('Received:', message.toString());
+    connection.socket.send(`Server got: ${message}`);
+  });
+
+  connection.socket.on('close', () => {
+    console.log('Client disconnected');
+  });
+});
+
+// ! -------------------
 
 fastify.register(cors, {
   origin: 'http://localhost:5173',

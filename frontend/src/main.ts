@@ -3,6 +3,26 @@ import { profileHandler } from "./views/profil";
 import { createMainMenu } from "./views/mainMenu";
 import { createPongGame } from "./game/pong";
 
+const ws = new WebSocket('ws://localhost:3000/game');
+
+ws.onopen = () => {
+  console.log("Connected to WS server");
+  ws.send(JSON.stringify({ type: "hello", msg: "Ping from client" }));
+};
+
+ws.onmessage = (event) => {
+  const data = event.data;
+  console.log("Message from server:", data);
+};
+
+ws.onerror = (err) => {
+  console.log("WebSocket error:", err);
+};
+
+ws.onclose = () => {
+  console.log("Disconnected from WS server");
+};
+
 
 const app = document.getElementById('app');
 export const background = document.createElement('div');
