@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/14 09:40:07 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/14 13:39:31 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ export async function tfa_handler(): Promise<void> {
 			if (!key) {
 				errorMessage.classList.remove('hidden');
 				errorMessage.textContent = 'Please enter a key';
+				resolve();
 				return;
 			}
 			const res = await fetch('http://127.0.0.1:3000/tfaLogin',{
