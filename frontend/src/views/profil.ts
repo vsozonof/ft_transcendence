@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/14 09:52:56 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/19 10:21:19 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,15 +41,22 @@ export async function profileHandler(): Promise<void> {
 	userTitle.textContent = 'Profil';
 	userTitle.className = 'text-xl font-bold mb-4';
 
+
+
 	const usernameP = document.createElement('p');
 	const emailP = document.createElement('p');
 
 	usernameP.innerHTML = `<strong>Username:</strong> <span id="profile-username">...</span>`;
 	emailP.innerHTML = `<strong>Email:</strong> <span id="profile-email">...</span>`;
 
+	const updatebutton = document.createElement('button');
+	updatebutton.textContent = 'Mettre à jour';
+	updatebutton.className = 'mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700';
+
 	userBox.appendChild(userTitle);
 	userBox.appendChild(usernameP);
 	userBox.appendChild(emailP);
+	userBox.appendChild(updatebutton);
 
 	// ---- Colonne de droite (2 blocs)
 	const rightCol = document.createElement('div');
