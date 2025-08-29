@@ -6,11 +6,11 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/17 18:22:12 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/08/29 16:25:49 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { background } from "../main"
+import { getBackground } from "../main";
 
 import { registerHandler } from "./register"
 
@@ -20,6 +20,7 @@ import { profileHandler } from "./profil"
 
 export async function loginHandler(): Promise<void> {
 	return new Promise((resolve, reject) => {
+		const background = getBackground();
 		const loginWrapper = document.createElement('div');
 		loginWrapper.className = `
 			h-screen w-screen

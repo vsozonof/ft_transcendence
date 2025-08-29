@@ -3,18 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   enable2fa.ts                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 11:27:53 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/11 13:20:21 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/29 16:25:21 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { background } from "../main"
+import { getBackground } from "../main";
 
 import { profileHandler } from "./profil"
 
 export async function enable2faHandler(): Promise<void> {
+	const background = getBackground();
 	const token = localStorage.getItem('token');
 	if (!token) {
 		alert("Token manquant, veuillez vous reconnecter.");

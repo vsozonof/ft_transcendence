@@ -3,36 +3,46 @@ import { profileHandler } from "./views/profil";
 import { createMainMenu } from "./views/mainMenu";
 import { createPongGame } from "./game/pong";
 
-const ws = new WebSocket('ws://localhost:3000/game');
+// const ws = new WebSocket('ws://localhost:3000/game');
 
-ws.onopen = () => {
-  console.log("Connected to WS server");
-  ws.send(JSON.stringify({ type: "hello", msg: "Ping from client" }));
-};
+// ws.onopen = () => {
+//   console.log("Connected to WS server");
+//   ws.send(JSON.stringify({ type: "hello", msg: "Ping from client" }));
+// };
 
-ws.onmessage = (event) => {
-  const data = event.data;
-  console.log("Message from server:", data);
-};
+// ws.onmessage = (event) => {
+//   const data = event.data;
+//   console.log("Message from server:", data);
+// };
 
-ws.onerror = (err) => {
-  console.log("WebSocket error:", err);
-};
+// ws.onerror = (err) => {
+//   console.log("WebSocket error:", err);
+// };
 
-ws.onclose = () => {
-  console.log("Disconnected from WS server");
-};
+// ws.onclose = () => {
+//   console.log("Disconnected from WS server");
+// };
 
 
 const app = document.getElementById('app');
-export const background = document.createElement('div');
+// export const background = document.createElement('div');
+
+export function getBackground(): HTMLDivElement {
+  let bg = document.getElementById('background') as HTMLDivElement | null;
+  if (!bg) {
+    bg = document.createElement('div');
+    bg.id = 'background';
+    document.body.appendChild(bg);
+  }
+  return bg;
+}
 
 function setupBackground() {
-	background.id = 'background';
-	background.className = 'fixed inset-0 bg-cover bg-center flex items-center justify-center';
-	background.style.backgroundImage = "url('/assets/bg.jpg')";
+	const bg = getBackground();
+	bg.className = 'fixed inset-0 bg-cover bg-center flex items-center justify-center';
+	bg.style.backgroundImage = "url('/assets/bg.jpg')";
 
-	app?.appendChild(background);
+	app?.appendChild(bg);
 }
 
 export async function launchApp() {
@@ -40,6 +50,7 @@ export async function launchApp() {
 		return;
 	console.log('Launching app...');
 	setupBackground();
+	const background = getBackground();
 	if (!localStorage.getItem('token')) {
 		await loginHandler();
 	}
@@ -48,7 +59,6 @@ export async function launchApp() {
 		onPlay: () => {
     		mainMenu.remove();
 			const game = createPongGame();
-			background.appendChild(game.canvas);
 			game.initGame();
   		},
 		onProfile: () => {
@@ -63,7 +73,7 @@ export async function launchApp() {
 		},
 		onLogout: () => {
 			localStorage.removeItem('token');
-			location.reload(); // Reload the page to reset the app state
+			location.reload();
 		},
 	});
 

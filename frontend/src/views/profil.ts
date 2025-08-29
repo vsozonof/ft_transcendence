@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   profil.ts                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/19 10:21:19 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/29 16:26:29 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { background, launchApp } from "../main"
+import { getBackground, launchApp } from "../main"
 
 import { enable2faHandler } from "./enable2fa"
 
@@ -19,6 +19,7 @@ import { tfa_disHandler } from "./2fadisable";
 import { loginHandler } from "./login";
 
 export async function profileHandler(): Promise<void> {
+	const background = getBackground();
 	const token = localStorage.getItem('token');
 	if (!token) {
 		alert("Token manquant, veuillez vous reconnecter.");

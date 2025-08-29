@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   register.ts                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 23:46:36 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/04 12:05:13 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/29 16:26:40 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { background } from "../main"
+import { getBackground } from "../main"
 
 import { loginHandler } from "./login"
 
@@ -21,6 +21,7 @@ import { loginHandler } from "./login"
 
 export async function registerHandler(): Promise<void> {
 	return new Promise((resolve, reject) => {
+		const background = getBackground();
 		const registerWrapper = document.createElement('div');
 		registerWrapper.className = `
 			h-screen w-screen
