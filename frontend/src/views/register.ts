@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 23:46:36 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/04 12:05:13 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/21 16:19:31 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ export async function registerHandler(): Promise<void> {
 		`;
 
 		const passInput = document.createElement('input');
-		passInput.type = 'text';
+		passInput.type = 'password';
 		passInput.placeholder = 'Password';
 		passInput.className = `
 		border border-gray-300 rounded-md px-3 py-2 mb-4 w-full
@@ -90,7 +90,7 @@ export async function registerHandler(): Promise<void> {
 		`;
 
 		const verifPassInput = document.createElement('input');
-		verifPassInput.type = 'text';
+		verifPassInput.type = 'password';
 		verifPassInput.placeholder = 'Retype Password';
 		verifPassInput.className = `
 		border border-gray-300 rounded-md px-3 py-2 mb-4 w-full

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   login.ts                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/17 18:22:12 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/08/20 15:59:26 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,6 @@ export async function loginHandler(): Promise<void> {
 			});
 			if (user.ok) {
 				const userData = await user.json();
-				console.log('User data:', userData);
 				let res = await fetch('http://127.0.0.1:3000/login', {
 					method: 'POST',
 					headers: {

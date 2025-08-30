@@ -6,13 +6,15 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/14 09:48:07 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/28 17:22:04 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 const db = require('./db/db.js');
 const argon2 = require('argon2');
 const qrcode = require('qrcode');
+const fs = require('fs');
+const path = require('path');
 const speakeasy = require('speakeasy');
 
 async function getUserByUsername(username) {
@@ -36,14 +38,20 @@ async function createUser(mail, mdp, username) {
 	email: mail,
 	password: await argon2.hash(mdp),
   };
+	const userexit = await getUserByUsername(user.username);
+  if (userexit) {
+	throw new Error('Username already exists');
+  }
+  const imageBuffer = fs.readFileSync(path.join(__dirname, "avatar", "IMG_4205.png"));
+  const base64Image = "data:image/png;base64," + imageBuffer.toString('base64');
   db.serialize(() => {
-	db.run(`INSERT OR IGNORE INTO users (username, email, password) VALUES (?, ?, ?)`, [user.username, user.email, user.password],
+	db.run(`INSERT OR IGNORE INTO users (username, email, password, avatar) VALUES (?, ?, ?, ?)`, [user.username, user.email, user.password, base64Image],
 	(err) => {
 		if (err) {
-			console.error('Error creating user:', err.message);
-			throw new Error('Database error');
+			console.error('Database error : ', err.message);
+			throw new Error('Failed to create user');
 		} else {
-			console.log('User created successfully:', user);
+			console.log('User created successfully');
 		}
 	});
 
@@ -185,6 +193,60 @@ async function disable2fa(user, key) {
 	}
 }
 
+async function updateUser(id, data) {
+	const user = await getUserById(id);
+	if (!user) {
+		throw new Error('User not found');
+	}
+	const usernameExists = await getUserByUsername(data.username);
+	if (usernameExists && usernameExists.id !== user.id) {
+		throw new Error('Username already exists');
+	}
+	if (data.username && data.username !== user.username) {
+		db.serialize(() => {
+			db.run(`UPDATE users SET username = ? WHERE id = ?`, [data.username, id], (err) => {
+				if (err) {
+					console.error('Error updating username:', err.message);
+				} else {
+					console.log('Username updated successfully');
+				}
+			});
+		});
+	}
+	if (data.email) {
+		if (!data.email.includes('@') || !data.email.includes('.')) {
+			console.log('Invalid email format');
+			throw new Error('Invalid email format');
+		}
+		db.serialize(() => {
+			db.run(`UPDATE users SET email = ? WHERE id = ?`, [data.email, id], (err) => {
+				if (err) {
+					console.error('Error updating email:', err.message);
+				} else {
+					console.log('Email updated successfully');
+				}
+			});
+		});
+	}
+}
+
+async function majAvatar(id, avatar) {
+	const user = await getUserById(id);
+	if (!user) {
+		throw new Error('User not found');
+	}
+	db.serialize(() => {
+		db.run(`UPDATE users SET avatar = ? WHERE id = ?`, [avatar, id], (err) => {
+			if (err) {
+				console.error('Error updating avatar:', err.message);
+				throw new Error('Failed to update avatar');
+			} else {
+				console.log('Avatar updated successfully');
+			}
+		});
+	});
+}
+
 // async function main(){
 // 	const code = await create2faqrcode('rostrub');
 // 	console.log('QR Code:', code.qrcode);
@@ -198,7 +260,9 @@ module.exports= {
 	is2faEnabled,
 	ChangePassword,
 	create2faqrcode,
-	disable2fa
+	disable2fa,
+	updateUser,
+	majAvatar
 };
 
 // main();

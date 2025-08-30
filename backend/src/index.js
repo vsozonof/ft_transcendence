@@ -2,7 +2,7 @@
 
 const Fastify = require('fastify');
 
-const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa } = require('./user.js');
+const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar } = require('./user.js');
 
 const fastify = Fastify();
 const webSocketPlugin = require('@fastify/websocket')
@@ -13,7 +13,7 @@ const db = require('./db/db.js');
 
 const dotenv = require('dotenv');
 const speakeasy = require('speakeasy');
-dotenv.config();
+dotenv.config({path: './src/.env'});
 
 // ! WebSocket -> MultiPlayer handler
 fastify.register(webSocketPlugin);
@@ -92,9 +92,9 @@ fastify.post('/register', async (request, reply) => {
 			await createUser(mail, password, username);
 			console.log('User created successfully');
 			reply.send({ message: 'User created successfully' });
-		} catch (error) {
-			console.error('Error creating user:', error);
-			reply.code(500).send({ error: 'Failed to create user' });
+		} catch (err) {
+			console.error('Error creating user:', err);
+			reply.code(500).send({ error: err.message });
 		}
 	}
 
@@ -143,7 +143,7 @@ fastify.get('/getUser', async (request, reply) => {
 		if (!user) {
 			return reply.code(404).send({ error: 'User not found' });
 		}
-		reply.send({ id: user.id, username: user.username, email: user.email });
+		reply.send({ id: user.id, username: user.username, email: user.email});
 	} catch (err) {
 		console.error('Error verifying token:', err);
 		reply.code(401).send({ error: 'Invalid token' });
@@ -161,6 +161,24 @@ fastify.post('/getUserByUsername', async (request, reply) => {
 		return reply.code(404).send({ error: 'User not found' });
 	}
 	reply.send({ id: user.id, username: user.username, email: user.email, is2fa: user.is2fa });
+});
+
+fastify.get('/getUserByToken', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	try {
+		const decoded = fastify.jwt.verify(token);
+		const user = await getUserByUsername(decoded.username);
+		if (!user) {
+			return reply.code(404).send({ error: 'User not found' });
+		}
+		reply.send({ id: user.id, username: user.username, email: user.email, is2fa: user.is2fa, avatar: user.avatar });
+	} catch (err) {
+		console.error('Error verifying token:', err);
+		reply.code(401).send({ error: 'Invalid token' });
+	}
 });
 
 fastify.get('/isit2fa', async (request, reply) => {
@@ -274,7 +292,6 @@ fastify.post('/disable2fa' , async (request, reply) => {
 fastify.post('/tfaLogin', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	const { key } = request.body;
-	console.log('Received 2FA login request with key:', key);
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
 	}
@@ -302,8 +319,47 @@ fastify.post('/tfaLogin', async (request, reply) => {
 	}
 });
 
-// fastify.post('2faSetup', async (request, reply) => {
-// 	const { username } = request.body;
+fastify.post('/updateUser', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	const { username, email } = request.body;
+	try {
+		const decoded = fastify.jwt.verify(token);
+		let user = await getUserByUsername(decoded.username);
+		if (!user) {
+			return reply.code(404).send({ error: 'User not found' });
+		}
+		await updateUser(user.id, { username, email });
+		console.log('Updating user:', user.username);
+		user = getUserByUsername(user.username);
+		reply.send({ user});
+	} catch (err) {
+		console.error('Error updating user:', err);
+		reply.code(500).send({ error: err.message });
+	}
+
+});
+
+fastify.post('/uploadAvatar', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	const avatar = request.body.avatar;
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	console.log(avatar);
+	try {
+		const decoded = fastify.jwt.verify(token);
+		await majAvatar(decoded.id, avatar);
+		reply.send({ message: 'Avatar updated successfully' });
+	}
+	catch (err){
+		console.error('Error updating avatar:', err);
+		reply.code(500).send({ error: 'Failed to update avatar' });
+	}
+
+});
 
 fastify.listen({ port: 3000, host: 'localhost'}, (err) => {
 	if (err) {

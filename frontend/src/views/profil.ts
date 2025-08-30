@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/19 10:21:19 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/28 17:21:31 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,25 @@ export async function profileHandler(): Promise<void> {
 		await loginHandler();
 		return;
 	}
+	else {
+		const user = await fetch('http://127.0.0.1:3000/getUserByToken', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				},
+			});
+		if (!user.ok) {
+			alert("Erreur lors de la récupération des informations utilisateur.");
+		}
+		else {
+			const data = await user.json();
+			localStorage.setItem('username', data.username);
+			localStorage.setItem('email', data.email);
+			localStorage.setItem('avatar', data.avatar);
+			console.log(localStorage.getItem('avatar'));
+		}
+	}
 
 	const wrapper = document.createElement('div');
 	wrapper.className = `
@@ -33,15 +52,28 @@ export async function profileHandler(): Promise<void> {
 
 	// ---- Bloc infos utilisateur (gauche)
 	const userBox = document.createElement('div');
-	userBox.className = `
-		w-1/3 bg-white p-6 rounded-lg shadow-md
-	`;
+	userBox.className = `bg-white p-6 rounded-lg shadow-md flex gap-6 items-center`;
+
+	//colone avatar
+	const avatarBox = document.createElement('div');
+	avatarBox.className = 'flex flex-col items-center gap-3';
+
+	const avatarImg = document.createElement('img');
+	avatarImg.src = localStorage.getItem('avatar') ?? "default-avatar.png";
+	avatarImg.alt = 'Avatar';
+	avatarImg.className = 'w-56 h-56 rounded-full object-cover border-2 border-blue-500';
+
+	const avButton = document.createElement('button');
+	avButton.textContent = 'Changer l\'avatar';
+	avButton.className = 'mt-2 bg-blue-600 text-white py-2 px-4 rounded';
+
+	//colone user info
+	const userInfo = document.createElement('div');
+	userInfo.className = 'flex flex-col flex-1';
 
 	const userTitle = document.createElement('h2');
 	userTitle.textContent = 'Profil';
 	userTitle.className = 'text-xl font-bold mb-4';
-
-
 
 	const usernameP = document.createElement('p');
 	const emailP = document.createElement('p');
@@ -49,18 +81,112 @@ export async function profileHandler(): Promise<void> {
 	usernameP.innerHTML = `<strong>Username:</strong> <span id="profile-username">...</span>`;
 	emailP.innerHTML = `<strong>Email:</strong> <span id="profile-email">...</span>`;
 
+	const userSubtitle = document.createElement('text');
+	userSubtitle.textContent = 'Username :';
+	userSubtitle.className = 'text-lg font-semibold mb-4';
+
+	const username = document.createElement('input');
+	username.type = 'text';
+	username.value = (localStorage.getItem('username') || 'Unknown');
+	username.className = 'w-full mb-4 px-3 py-2 border rounded';
+
+	const mailSubtitle = document.createElement('text');
+	mailSubtitle.textContent = 'Email :';
+	mailSubtitle.className = 'text-lg font-semibold mb-4';
+
+	const mail = document.createElement('input');
+	mail.type = 'email';
+	mail.value = localStorage.getItem('email') || 'Unknown';
+	mail.className = 'w-full mb-4 px-3 py-2 border rounded';
+
+	const errorMessage = document.createElement('div');
+	errorMessage.className = 'text-red-500 text-sm mb-2 hidden';
+	errorMessage.textContent = 'Invalid username or password';
+
 	const updatebutton = document.createElement('button');
-	updatebutton.textContent = 'Mettre à jour';
-	updatebutton.className = 'mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700';
+	updatebutton.textContent = 'Sauvegarder';
+	updatebutton.className = 'mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 block ml-auto';
 
-	userBox.appendChild(userTitle);
-	userBox.appendChild(usernameP);
-	userBox.appendChild(emailP);
-	userBox.appendChild(updatebutton);
+	userInfo.appendChild(userTitle);
+	userInfo.appendChild(userSubtitle);
+	userInfo.appendChild(username);
+	userInfo.appendChild(mailSubtitle);
+	userInfo.appendChild(mail);
+	userInfo.appendChild(errorMessage);
+	userInfo.appendChild(updatebutton);
 
-	// ---- Colonne de droite (2 blocs)
-	const rightCol = document.createElement('div');
-	rightCol.className = 'flex flex-col gap-6 w-1/3';
+	avatarBox.appendChild(avatarImg);
+	avatarBox.appendChild(avButton);
+	userBox.appendChild(avatarBox);
+	userBox.appendChild(userInfo);
+
+	updatebutton.addEventListener('click', async () => {
+		const res = await fetch('http://127.0.0.1:3000/updateUser', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${token}`
+			},
+			body: JSON.stringify({
+				username: username.value,
+				email: mail.value
+			})
+		});
+		if (res.ok) {
+			alert("Informations mises à jour !");
+		} else {
+			errorMessage.classList.remove('hidden');
+			errorMessage.textContent = (await res.json()).error || 'Update failed';
+		}
+	});
+
+	avButton.addEventListener('dragover', (e) => {
+		e.preventDefault();
+		avButton.classList.add('bg-blue-700');
+	});
+
+	avButton.addEventListener('dragleave', (e) => {
+		avButton.classList.remove('bg-blue-700');
+	});
+
+	avButton.addEventListener('drop', async (e) => {
+		e.preventDefault();
+		const file = e.dataTransfer?.files[0];
+
+		if (!file) {
+			alert("No file dropped");
+			return;
+		}
+
+		if (!file.type.startsWith('image/')) {
+			alert("Please drop an image file");
+			return;
+		}
+
+		const reader = new FileReader();
+		reader.onload = async () => {
+		const base64 = reader.result; // ex: "data:image/png;base64,iVBORw0KG..."
+
+		const res = await fetch("http://127.0.0.1:3000/uploadAvatar", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${token}`
+			},
+			body: JSON.stringify({ avatar: base64 as string })
+		});
+
+		if (res.ok) {
+			console.log(base64 as string);
+			avatarImg.src = base64 as string;
+			localStorage.setItem('avatar', base64 as string);
+			alert("Avatar mis à jour !");
+		} else {
+			alert("Erreur lors de l'upload de l'avatar");
+		}
+	};
+		reader.readAsDataURL(file); // convertit le fichier en base64
+	});
 
 	// ---- Bloc changement de mot de passe
 	const pwdBox = document.createElement('div');
@@ -87,7 +213,7 @@ export async function profileHandler(): Promise<void> {
 
 	const pwdBtn = document.createElement('button');
 	pwdBtn.textContent = 'Changer';
-	pwdBtn.className = 'w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700';
+	pwdBtn.className = 'mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 block ml-auto';
 
 	pwdBtn.addEventListener('click', async () => {
 		const res = await fetch('http://127.0.0.1:3000/changePassword', {
@@ -156,6 +282,35 @@ export async function profileHandler(): Promise<void> {
 	twofaBox.appendChild(twofaTitle);
 	twofaBox.appendChild(twofaBtn);
 
+		// ---- Bloc suppression
+	const supBox = document.createElement('div');
+	supBox.className = 'bg-white p-6 rounded-lg shadow-md';
+
+	const supTitle = document.createElement('h2');
+	supTitle.textContent = 'Suppression de compte';
+	supTitle.className = 'text-lg font-semibold mb-4';
+
+	const supBtn = document.createElement('button');
+	supBtn.textContent = 'Supprimer le compte';
+	supBtn.className = 'w-full bg-red-600 text-white py-2 rounded hover:bg-red-700';
+
+	supBtn.addEventListener('click', async () => {
+		const res = await fetch('http://127.0.0.1:3000/deleteAccount', {
+			method: 'DELETE',
+			headers: {
+				'Authorization': `Bearer ${token}`
+			}
+		});
+		if (res.ok) {
+			alert("Compte supprimé !");
+		} else {
+			alert("Erreur lors de la suppression du compte");
+		}
+	});
+
+	supBox.appendChild(supTitle);
+	supBox.appendChild(supBtn);
+
 	// ---- retour au menu
 	const backCol = document.createElement('div');
 	backCol.className = 'flex flex-col gap-6 w-full';
@@ -177,27 +332,27 @@ export async function profileHandler(): Promise<void> {
 			return;
 		});
 
+	// ---- Colonne de gauche (2 blocs)
+	const leftCol = document.createElement('div');
+	leftCol.className = 'flex flex-col gap-10 w-1/2';
+
+		// ---- Colonne de droite (2 blocs)
+	const rightCol = document.createElement('div');
+	rightCol.className = 'flex flex-col gap-6 w-1/2';
+
 	// ---- Build page
 	const topRow = document.createElement('div');
 	topRow.className = 'flex gap-10 w-full mx-auto items-start';
 	rightCol.appendChild(pwdBox);
 	rightCol.appendChild(twofaBox);
+	leftCol.appendChild(userBox);
+	leftCol.appendChild(supBox);
 	backCol.appendChild(backBox);
 
-	topRow.appendChild(userBox);
+	topRow.appendChild(leftCol);
 	topRow.appendChild(rightCol);
 	wrapper.appendChild(topRow);
 	wrapper.appendChild(backCol);
 
 	background.appendChild(wrapper);
-
-	// ---- Récupération info user
-	const userRes = await fetch('http://127.0.0.1:3000/getUser', {
-		headers: { Authorization: `Bearer ${token}` }
-	});
-	if (userRes.ok) {
-		const user = await userRes.json();
-		document.getElementById('profile-username')!.textContent = localStorage.getItem('username');
-		document.getElementById('profile-email')!.textContent = localStorage.getItem('email');
-	}
 }
