@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/30 13:09:33 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/30 13:41:05 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -297,13 +297,16 @@ export async function profileHandler(): Promise<void> {
 
 	supBtn.addEventListener('click', async () => {
 		const res = await fetch('http://127.0.0.1:3000/deleteAccount', {
-			method: 'DELETE',
+			method: 'POST',
 			headers: {
 				'Authorization': `Bearer ${token}`
 			}
 		});
 		if (res.ok) {
 			alert("Compte supprimé !");
+			localStorage.removeItem('token');
+			background.removeChild(wrapper);
+			launchApp();
 		} else {
 			alert("Erreur lors de la suppression du compte");
 		}

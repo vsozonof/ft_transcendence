@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/30 13:09:16 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/30 13:33:27 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,6 +124,11 @@ export async function loginHandler(): Promise<void> {
 			});
 			if (user.ok) {
 				const userData = await user.json();
+				if (userData.activated === false) {
+					errorMessage.classList.remove('hidden');
+					errorMessage.textContent = 'Invalid username or passwords';
+					return;
+				}
 				let res = await fetch('http://127.0.0.1:3000/login', {
 					method: 'POST',
 					headers: {

@@ -2,7 +2,7 @@
 
 const Fastify = require('fastify');
 
-const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar } = require('./user.js');
+const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser } = require('./user.js');
 
 const fastify = Fastify();
 // const webSocketPlugin = require('@fastify/websocket')
@@ -45,7 +45,7 @@ dotenv.config({path: './src/.env'});
 // 				return conn.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
 // 			const you = room.join(conn);
 // 			joinedRoom = room;
-			
+
 // 			conn.send(JSON.stringify({
 // 				type: "lobby_update",
 // 				you,
@@ -58,7 +58,7 @@ dotenv.config({path: './src/.env'});
 // 	})
 
 // 	if (joinedRoom) joinedRoom.handleMessage(conn, msg);
-	
+
 // 	conn.on("close", () => {
 // 	  if (joinedRoom) joinedRoom.leave(conn.socket);
 // 	});
@@ -395,6 +395,23 @@ fastify.post('/uploadAvatar', async (request, reply) => {
 
 });
 
+fastify.post('/deleteAccount', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	const user = await getUserByUsername(fastify.jwt.verify(token).username);
+	if (!user) {
+		return reply.code(404).send({ error: 'User not found' });
+	}
+	try {
+		await deleteUser(user.id);
+		reply.send({ message: 'Account deleted successfully' });
+	} catch (err) {
+		console.error('Error deleting account:', err);
+		reply.code(500).send({ error: 'Failed to delete account' });
+	}
+});
 
 fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
 	if (err) {

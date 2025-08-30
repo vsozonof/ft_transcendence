@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/28 17:22:04 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/30 13:31:58 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,6 +247,27 @@ async function majAvatar(id, avatar) {
 	});
 }
 
+async function deleteUser(id) {
+	const user = await getUserById(id);
+	if (!user) {
+		throw new Error('User not found');
+	}
+	user.username = "DeletedUser";
+	user.email = "";
+	user.activated = false;
+	user.password = "";
+	db.serialize(() => {
+		db.run(`DELETE FROM users WHERE id = ?`, [id], (err) => {
+			if (err) {
+				console.error('Error deleting user:', err.message);
+				throw new Error('Failed to delete user');
+			} else {
+				console.log('User deleted successfully');
+			}
+		});
+	});
+}
+
 // async function main(){
 // 	const code = await create2faqrcode('rostrub');
 // 	console.log('QR Code:', code.qrcode);
@@ -262,7 +283,8 @@ module.exports= {
 	create2faqrcode,
 	disable2fa,
 	updateUser,
-	majAvatar
+	majAvatar,
+	deleteUser
 };
 
 // main();
