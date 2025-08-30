@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/30 13:31:58 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/30 14:31:59 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,7 +252,11 @@ async function deleteUser(id) {
 	if (!user) {
 		throw new Error('User not found');
 	}
-	user.username = "DeletedUser";
+	let hash = await argon2.hash(user.username + Date.now().toString());
+	hash = hash.replace("argon2id", "");
+	const shortHash = hash.replace(/[^a-z0-9]/gi, "").slice(0, 10); // on garde 10 chars alphanum
+	user.username = "deleted_" + shortHash;
+	console.log('Anonymized username to:', user.username);
 	user.email = "";
 	user.activated = false;
 	user.password = "";
