@@ -6,11 +6,11 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/28 17:21:31 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/30 13:09:33 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { background, launchApp } from "../main"
+import { getBackground, launchApp } from "../main"
 
 import { enable2faHandler } from "./enable2fa"
 
@@ -19,6 +19,7 @@ import { tfa_disHandler } from "./2fadisable";
 import { loginHandler } from "./login";
 
 export async function profileHandler(): Promise<void> {
+	const background = getBackground();
 	const token = localStorage.getItem('token');
 	if (!token) {
 		alert("Token manquant, veuillez vous reconnecter.");

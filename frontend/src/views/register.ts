@@ -6,11 +6,11 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 23:46:36 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/21 16:19:31 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/30 13:10:46 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { background } from "../main"
+import { getBackground } from "../main"
 
 import { loginHandler } from "./login"
 
@@ -21,6 +21,7 @@ import { loginHandler } from "./login"
 
 export async function registerHandler(): Promise<void> {
 	return new Promise((resolve, reject) => {
+		const background = getBackground();
 		const registerWrapper = document.createElement('div');
 		registerWrapper.className = `
 			h-screen w-screen

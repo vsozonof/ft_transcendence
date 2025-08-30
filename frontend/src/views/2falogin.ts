@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   2falogin.ts                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/14 13:39:31 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/08/29 16:24:58 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { background } from "../main"
+import { getBackground } from "../main";
 
 import { profileHandler } from "./profil"
 
@@ -23,6 +23,7 @@ import { loginHandler } from "./login";
 
 export async function tfa_handler(): Promise<void> {
 	return new Promise((resolve, reject) => {
+		const background = getBackground();
 		const tfaWrapper = document.createElement('div');
 		tfaWrapper.className = `
 			h-screen w-screen

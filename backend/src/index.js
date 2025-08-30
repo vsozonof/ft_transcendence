@@ -5,7 +5,7 @@ const Fastify = require('fastify');
 const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar } = require('./user.js');
 
 const fastify = Fastify();
-const webSocketPlugin = require('@fastify/websocket')
+// const webSocketPlugin = require('@fastify/websocket')
 
 const cors = require('@fastify/cors');
 
@@ -15,24 +15,58 @@ const dotenv = require('dotenv');
 const speakeasy = require('speakeasy');
 dotenv.config({path: './src/.env'});
 
-// ! WebSocket -> MultiPlayer handler
-fastify.register(webSocketPlugin);
+// // ! MultiPlayer handler
 
-fastify.get('/game', { websocket: true }, (connection, req) => {
-  console.log('New WS connection');
-	connection.send('HELLLLLLLLLLLO');
+// const { roomHandler } = require('./game/roomHandler.js');
+// const rooms = new roomHandler();
 
-  connection.socket.on('message', (message) => {
-    console.log('Received:', message.toString());
-    connection.socket.send(`Server got: ${message}`);
-  });
+// fastify.register(webSocketPlugin);
 
-  connection.socket.on('close', () => {
-    console.log('Client disconnected');
-  });
-});
+// fastify.post("/rooms", async (request, reply) => {
+// 	const { mode } = request.body || {};
+// 	if (!["ai", "pvp", "tournament"].includes(mode))
+// 		return reply.code(400).send({ error: "Invalid game mode" });
 
-// ! -------------------
+// 	const room = rooms.create(mode);
+//   	return reply.send({ roomId: room.id, mode: room.mode });
+// });
+
+// fastify.get("/game", { websocket: true}, (conn) => {
+// 	let joinedRoom = null;
+
+// 	conn.on("message", (raw) => {
+// 		let msg;
+// 		try { msg = JSON.parse(raw.toString())}
+// 		catch (e) { console.error("Failed to parse message:", e); return; }
+
+// 		if (!joinedRoom && msg.type === 'join_room' && msg.roomId) {
+// 			const room = rooms.get(msg.roomId);
+// 			if (!room)
+// 				return conn.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
+// 			const you = room.join(conn);
+// 			joinedRoom = room;
+			
+// 			conn.send(JSON.stringify({
+// 				type: "lobby_update",
+// 				you,
+// 				mode: room.mode,
+// 				// players: room.playersList(),
+// 			}));
+// 		}
+
+// 		return ;
+// 	})
+
+// 	if (joinedRoom) joinedRoom.handleMessage(conn, msg);
+	
+// 	conn.on("close", () => {
+// 	  if (joinedRoom) joinedRoom.leave(conn.socket);
+// 	});
+// });
+
+
+
+// // ! -------------------
 
 fastify.register(cors, {
   origin: 'http://localhost:5173',
@@ -361,11 +395,13 @@ fastify.post('/uploadAvatar', async (request, reply) => {
 
 });
 
-fastify.listen({ port: 3000, host: 'localhost'}, (err) => {
+
+fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
 	if (err) {
 		console.log(err);
 		process.exit(1);
 	}
-	else
+	else {
 		console.log('SERVER LANCE');
+	}
 });

@@ -6,45 +6,81 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/17 16:34:32 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/08/29 03:14:08 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { background } from "../main";
+import { getBackground } from "../main";
 
 // ? _______________
 // ? createCanvas()
 // ? -> Creates the canvas element for the Pong game
 // ? -> Sets its dimensions and appends it to the background
 function createCanvas() {
-	const canvasContainer = document.createElement('div');
-	canvasContainer.className = '';
+	const background = getBackground();
+	background.replaceChildren();
 
-	const canvas = document.createElement('canvas');
+	const canvasContainer = document.createElement("div");
+	canvasContainer.className =
+		"w-[800px] flex flex-col items-center gap-3";
+
+	const header = document.createElement("div");
+	header.className =
+		"w-full min-h-[105px] flex items-center justify-between px-4 " +
+		"rounded-xl border border-white/20 bg-white/5 backdrop-blur text-white";
+
+	const p1 = document.createElement("div");
+	p1.className = "flex items-center gap-3";
+	const p1Name = document.createElement("span");
+	p1Name.className = "font-semibold";
+	p1Name.textContent = "Waiting..";
+	const p1Img = document.createElement("img");
+	p1Img.className = "h-20 w-20 rounded-full object-cover bg-white/10";
+	p1Img.alt = "P1 avatar";
+	p1Img.src = "./assets/pfp_placeholder.png";
+	p1.append(p1Img, p1Name);
+
+	const p2 = document.createElement("div");
+	p2.className = "flex items-center gap-3";
+	const p2Name = document.createElement("span");
+	p2Name.className = "font-semibold";
+	p2Name.textContent = "Waiting..";
+	const p2Img = document.createElement("img");
+	p2Img.className = "h-20 w-20 rounded-full object-cover bg-white/10";
+	p2Img.alt = "P2 avatar";
+	p2Img.src = "./assets/pfp_placeholder.png";
+	p2.append(p2Name, p2Img);
+	
+	const canvas = document.createElement("canvas");
+	
 	canvas.width = 800;
 	canvas.height = 600;
-	canvas.className = 'bg-black border-4 border-white mx-auto block';
-
-	canvas.style.left = '200px';
-	canvasContainer.style.left = '200px';
+	canvas.className =
+	"w-full bg-black border-4 border-white rounded-xl block";
+	
+	header.append(p1, p2);
+	canvasContainer.appendChild(header);
 	canvasContainer.appendChild(canvas);
 	background.appendChild(canvasContainer);
+	
+	(canvas as any)._ui = { p1: { nameEl: p1Name, img: p1Img }, p2: { nameEl: p2Name, img: p2Img } };
 	return canvas;
 }
+
 
 // ? _______________
 // ? drawScore()
 // ? -> Draws the current score on the canvas
 // ? and updates it as the game progresses
-function drawScore(ctx, gameState) {
+function drawScore(ctx) {
 	ctx.fillStyle = 'white';
 	ctx.font = '48px Arial';
 	ctx.textAlign = 'center';
-	ctx.fillText(`${gameState.score1} - ${gameState.score2}`, ctx.canvas.width / 2, 50);
+	ctx.fillText(`NULL - NULL`, ctx.canvas.width / 2, 50);
 }
 
 // ? _______________
-// ? keyHandler()
+// ? keyHandler() ✅
 // ? -> Handles key presses for paddle movement
 function keyHandler() {
 	const keysPressed: Record<string, boolean> = {};
@@ -65,43 +101,21 @@ function keyHandler() {
 // ? -> Updates the paddles' positions based on the keys pressed
 // ? -> Will lock paddle2 if gamemode is not 'local'
 // ? -> The function will handle the AI movements aswell
-function checkKeyPresses(keysPressed, paddle1, paddle2, ctx, gameState, aiAction) {
-	if (!paddle1.locked && !paddle2.locked) {
-		if ((keysPressed['s'] || keysPressed['S']) && paddle1.y + paddle1.height < ctx.canvas.height) 
-			paddle1.y += paddle1.speed;
+// function checkKeyPresses(keysPressed) {
+	
+// 	if ((keysPressed['s'] || keysPressed['S'])) 
+// 		// paddle1.y += paddle1.speed;
 
-		if ((keysPressed['w'] || keysPressed['W']) && paddle1.y > 0)
-			paddle1.y -= paddle1.speed;
-		
-		if (gameState.gameMode === 'local') {
-			if (keysPressed['ArrowDown'] && paddle2.y + paddle2.height < ctx.canvas.height)
-				paddle2.y += paddle2.speed;
+// 	if ((keysPressed['w'] || keysPressed['W']))
+// 		// paddle1.y -= paddle1.speed;
+	
+// 	if (keysPressed['ArrowDown'])
+// 		// paddle2.y += paddle2.speed;
 
-			if (keysPressed['ArrowUp'] && paddle2.y > 0)
-				paddle2.y -= paddle2.speed;
-		}
-		else if (gameState.gameMode === 'AI') {
-			console.log("i pass here");
-			console.log(`Steps remaining: ${aiAction.stepsRemaining}`);
-			if (aiAction.stepsRemaining > 0) {
-				console.log("i enter here");
-				console.log(`AI is moving ${aiAction.direction} for ${aiAction.stepsRemaining} steps`);
-				if (aiAction.direction === "up" && paddle2.y > 0) {
-					console.log("i move up");
-					paddle2.y -= paddle2.speed;
-				}
-				else if (aiAction.direction === "down" && paddle2.y + paddle2.height < ctx.canvas.height) {
-					console.log("i move down");
-					paddle2.y += paddle2.speed;
-				}
-				aiAction.stepsRemaining -= 1;
-			}
-		}
-		else if (gameState.gameMode === 'multiplayer') {
-			// define multiplayer controls here
-			}
-		}
-}
+// 	if (keysPressed['ArrowUp'])
+// 		// paddle2.y -= paddle2.speed;
+
+// }
 
 function showReadyScreen(ctx, gameState): Promise<void> {
   return new Promise((resolve) => {
