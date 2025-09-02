@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/30 13:33:27 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/02 10:30:46 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,12 @@ export async function loginHandler(): Promise<void> {
 						resolve();
 					} else {
 						background.removeChild(loginWrapper);
+						await fetch('http://127.0.0.1:3000/updateActivity', {
+							method: 'POST',
+							headers: {
+								'Authorization': `Bearer ${data.token}`
+							}
+						});
 						resolve();
 						return;
 					}

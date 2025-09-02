@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   2falogin.ts                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/29 16:24:58 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/02 10:31:49 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,12 @@ export async function tfa_handler(): Promise<void> {
 			if (res.ok)	{
 				const data = await res.json();
 				console.log('Login successful, token:', data.token);
+				await fetch('http://127.0.0.1:3000/updateActivity', {
+							method: 'POST',
+							headers: {
+								'Authorization': `Bearer ${data.token}`
+							}
+						});
 				background.removeChild(tfaWrapper);
 				profileHandler();
 				resolve();

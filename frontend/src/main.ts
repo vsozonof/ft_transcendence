@@ -62,8 +62,8 @@ export async function launchApp() {
 			game.initGame();
   		},
 		onProfile: () => {
-			mainMenu.remove();
-			profileHandler();
+				mainMenu.remove();
+				profileHandler();
 		},
 		onRankings: () => {
 			mainMenu.remove();

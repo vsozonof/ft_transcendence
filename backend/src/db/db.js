@@ -23,7 +23,8 @@ db.serialize(() => {
       is2fa BOOLEAN DEFAULT FALSE,
       loose INTEGER DEFAULT 0,
       win INTEGER DEFAULT 0,
-      activated BOOLEAN DEFAULT TRUE
+      activated BOOLEAN DEFAULT TRUE,
+      last_activity INTEGER DEFAULT CURRENT_TIMESTAMP
     )
   `, (err) => {
     if (err)
