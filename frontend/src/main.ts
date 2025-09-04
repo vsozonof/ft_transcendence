@@ -2,6 +2,7 @@ import { loginHandler } from "./views/login";
 import { profileHandler } from "./views/profil";
 import { createMainMenu } from "./views/mainMenu";
 import { createPongGame } from "./game/pong";
+import { friendsHandler } from "./views/friends";
 
 // const ws = new WebSocket('ws://localhost:3000/game');
 
@@ -68,8 +69,9 @@ export async function launchApp() {
 		onRankings: () => {
 			mainMenu.remove();
 		},
-		onSettings: () => {
+		onFriends: () => {
 			mainMenu.remove();
+			friendsHandler();
 		},
 		onLogout: () => {
 			localStorage.removeItem('token');

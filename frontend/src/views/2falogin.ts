@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/02 10:31:49 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/03 19:50:31 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,6 @@ export async function tfa_handler(): Promise<void> {
 							}
 						});
 				background.removeChild(tfaWrapper);
-				profileHandler();
 				resolve();
 				return
 			}

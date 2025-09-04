@@ -1,10 +1,12 @@
 // LE BACKEND COMMENCE ICI HEHEHEHEHEHE
 
-const Fastify = require('fastify');
+const fastify = require('fastify')({
+	bodyLimit: 10 * 1024 * 1024
+});
 
 const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser, verifActivity, updateActivity } = require('./user.js');
 
-const fastify = Fastify();
+// const fastify = Fastify();
 // const webSocketPlugin = require('@fastify/websocket')
 
 const cors = require('@fastify/cors');
@@ -382,14 +384,13 @@ fastify.post('/uploadAvatar', async (request, reply) => {
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
 	}
-	console.log(avatar);
 	try {
 		const decoded = fastify.jwt.verify(token);
 		await majAvatar(decoded.id, avatar);
 		reply.send({ message: 'Avatar updated successfully' });
 	}
 	catch (err){
-		console.error('Error updating avatar:', err);
+		console.log('Error updating avatar:', err);
 		reply.code(500).send({ error: 'Failed to update avatar' });
 	}
 

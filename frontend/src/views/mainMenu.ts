@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/05 19:25:37 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/07/28 15:11:32 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/03 11:31:56 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ interface MainMenuCallbacks {
 	onPlay: () => void;
 	onProfile: () => void;
 	onRankings: () => void;
-	onSettings: () => void;
+	onFriends: () => void;
 	onLogout: () => void;
 }
 
@@ -62,9 +62,9 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	hover:bg-blue-700 transition-colors
 	`;
 
-	const settingsButton = document.createElement('button');
-	settingsButton.textContent = 'Settings';
-	settingsButton.className = `
+	const friendsButton = document.createElement('button');
+	friendsButton.textContent = 'Friends';
+	friendsButton.className = `
 	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
 	hover:bg-blue-700 transition-colors
 	`;
@@ -82,7 +82,7 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	mainMenu.appendChild(playButton);
 	mainMenu.appendChild(profileButton);
 	mainMenu.appendChild(rankingsButton);
-	mainMenu.appendChild(settingsButton);
+	mainMenu.appendChild(friendsButton);
 	mainMenu.appendChild(logOut);
 
 	mainMenuWrapper.appendChild(mainMenu);
@@ -90,7 +90,7 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	playButton.onclick = callbacks.onPlay;
 	profileButton.onclick = callbacks.onProfile;
 	rankingsButton.onclick = callbacks.onRankings;
-	settingsButton.onclick = callbacks.onSettings;
+	friendsButton.onclick = callbacks.onFriends;
 	logOut.onclick = callbacks.onLogout;
 
 	return mainMenuWrapper;

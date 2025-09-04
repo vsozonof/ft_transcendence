@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/02 17:10:54 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/03 11:00:28 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ export async function profileHandler(): Promise<void> {
 	const token = localStorage.getItem('token');
 	if (!token) {
 		alert("Token manquant, veuillez vous reconnecter.");
-		await loginHandler();
+		launchApp();
 		return;
 	}
 	else {
@@ -36,7 +36,7 @@ export async function profileHandler(): Promise<void> {
 		if (!res.ok) {
 			alert("vous avez ete deconnecte pour inactivite")
 			localStorage.removeItem('token');
-			await loginHandler();
+			launchApp();
 			return;
 		}
 		const user = await fetch('http://127.0.0.1:3000/getUserByToken', {
