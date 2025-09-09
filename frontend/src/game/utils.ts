@@ -6,11 +6,11 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/29 03:14:08 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/09 15:40:30 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { getBackground } from "../main";
+import { getBackground, launchApp } from "../main";
 
 // ? _______________
 // ? createCanvas()
@@ -72,11 +72,11 @@ function createCanvas() {
 // ? drawScore()
 // ? -> Draws the current score on the canvas
 // ? and updates it as the game progresses
-function drawScore(ctx) {
+function drawScore(ctx, score1: number, score2: number) {
 	ctx.fillStyle = 'white';
 	ctx.font = '48px Arial';
 	ctx.textAlign = 'center';
-	ctx.fillText(`NULL - NULL`, ctx.canvas.width / 2, 50);
+	ctx.fillText(`${score1} - ${score2}`, ctx.canvas.width / 2, 50);
 }
 
 // ? _______________
@@ -101,23 +101,32 @@ function keyHandler() {
 // ? -> Updates the paddles' positions based on the keys pressed
 // ? -> Will lock paddle2 if gamemode is not 'local'
 // ? -> The function will handle the AI movements aswell
-// function checkKeyPresses(keysPressed) {
+let lastMoveSent = 0;
+function checkKeyPresses(keysPressed, ws: WebSocket) {
+
+	const now = performance.now();
+	if (now - lastMoveSent < 16) return;
+		lastMoveSent = now;
+
+	if ((keysPressed['s'] || keysPressed['S'])) {
+		console.log("Sending move down");
+		ws.send(JSON.stringify({ type: 'move', direction: 'down' }) );
+	}
+		
+	if ((keysPressed['w'] || keysPressed['W'])) {
+		console.log("Sending move up");
+		ws.send(JSON.stringify({ type: 'move', direction: 'up' }) );
+	}
 	
-// 	if ((keysPressed['s'] || keysPressed['S'])) 
-// 		// paddle1.y += paddle1.speed;
+	// if (keysPressed['ArrowDown'])
+		// paddle2.y += paddle2.speed;
 
-// 	if ((keysPressed['w'] || keysPressed['W']))
-// 		// paddle1.y -= paddle1.speed;
-	
-// 	if (keysPressed['ArrowDown'])
-// 		// paddle2.y += paddle2.speed;
+	// if (keysPressed['ArrowUp'])
+		// paddle2.y -= paddle2.speed;
 
-// 	if (keysPressed['ArrowUp'])
-// 		// paddle2.y -= paddle2.speed;
+}
 
-// }
-
-function showReadyScreen(ctx, gameState): Promise<void> {
+function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "multiplayer" | "ai", ws: WebSocket, side: number): Promise<void> {
   return new Promise((resolve) => {
     const readyWrapper = document.createElement('div');
     readyWrapper.className = `
@@ -143,56 +152,70 @@ function showReadyScreen(ctx, gameState): Promise<void> {
     readyP2.textContent = 'Ready';
 
     readyP1.onclick = () => {
-      gameState.player1Ready = true;
       readyP1.disabled = true;
       readyP1.textContent = '✅';
-      checkBothReady();
+	  ws.send(JSON.stringify({ type: 'ready', side: side }) );
     };
 
-    if (gameState.gameMode === 'local') {
-      readyP2.onclick = () => {
-        gameState.player2Ready = true;
-        readyP2.disabled = true;
-        readyP2.textContent = '✅';
-        checkBothReady();
-      };
-    } else if (gameState.gameMode === 'AI') {
-      gameState.player2Ready = true;
-      readyP2.disabled = true;
-      readyP2.textContent = '✅';
-    } else if (gameState.gameMode === 'multiplayer') {
-      readyP2.disabled = true;
-      readyP2.textContent = 'Waiting for Player 2...';
+    if (mode === 'local') {
+		buttonContainer.append(readyP1);
+		readyP2.onclick = () => {
+       		readyP2.disabled = true;
+        	readyP2.textContent = '✅';
+    	};
+    }
+	else if (mode === "multiplayer") {
+		buttonContainer.append(readyP1, readyP2);
+		readyP2.disabled = true;
+		readyP2.textContent = 'Opponent: ⏳ Waiting…';
+	}
+	else if (mode === "ai") {
+		buttonContainer.append(readyP1, readyP2);
+		readyP2.disabled = true;
+		readyP2.textContent = '🤖 AI is always ready';
+
+	const onMsg = (ev: MessageEvent) => {
+		let msg;
+		
+		try { 
+			msg = JSON.parse(ev.data); 
+		} catch {
+			return;
+		}
+
+		if (msg.type === "lobby_update") {
+			if (msg.mode === "multiplayer") {
+				const other = side ^ 1;
+				const otherReady = !!msg.players?.[other]?.ready;
+			
+				if (otherReady) {
+					readyP2.textContent = "Opponent: ✅ Ready";
+				} else {
+					readyP2.textContent = "Opponent: ⏳ Waiting…";
+				}
+			}
+		}
+
+		if (msg.type === "countdown") {
+			title.textContent = `Starting in ${msg.secondsLeft}…`;
+			if (msg.secondsLeft <= 0) {
+				cleanup();
+				resolve();
+			}
+		}
+    };
+
+    ws.addEventListener("message", onMsg);
+
+    function cleanup() {
+      ws.removeEventListener("message", onMsg);
+      readyWrapper.remove();
     }
 
-    buttonContainer.append(readyP1, readyP2);
     readyWrapper.append(title, buttonContainer);
     ctx.canvas.parentElement?.appendChild(readyWrapper);
 
-    function checkBothReady() {
-      if (gameState.player1Ready && gameState.player2Ready) {
-        readyWrapper.remove();
-        resolve();
-      }
-    }
-  });
-}
-
-
-// ? _______________
-// ? checkForWinner()
-// ? -> Checks if either player has reached the score limit
-// ? -> If so, it shows the win screen and stops the game
-function checkForWinner(ctx, gameState): boolean {
-	if (gameState.score1 >= gameState.scoreLimit) {
-		showWinScreen('Player 1', ctx);
-		return true;
-	}
-	if (gameState.score2 >= gameState.scoreLimit) {
-		showWinScreen('Player 2', ctx);
-		return true;
-	}
-	return false;
+  }});
 }
 
 // ? _______________
@@ -200,7 +223,7 @@ function checkForWinner(ctx, gameState): boolean {
 // ? -> Displays a win message when a player reaches the score limit
 // ? -> Stops the game and shows the winner
 // ? -> Provides buttons to play again or return to the main menu
-function showWinScreen(winner: string, ctx) {
+function showWinScreen(winner: string, ctx, ws: WebSocket) {
 	const winWrapper = document.createElement('div');
 	winWrapper.className = `
 		absolute top-1/2 left-1/2 
@@ -216,23 +239,25 @@ function showWinScreen(winner: string, ctx) {
 	const buttonContainer = document.createElement('div');
 	buttonContainer.className = 'flex gap-4 justify-center mt-4';
 
-	const restartButton = document.createElement('button');
-	restartButton.className = `bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex-1`;
-	restartButton.textContent = 'Play Again';
-
 	const returnButton = document.createElement('button');
 	returnButton.className = `bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex-1`;
 	returnButton.textContent = 'Return to Menu';
 
-	buttonContainer.appendChild(restartButton);
-	buttonContainer.appendChild(returnButton);
+	returnButton.addEventListener('click', () => {
+		winWrapper.remove();
+		ws.close();
 
+		const background = getBackground();
+		background.innerHTML = '';
+
+		launchApp();
+	});
+
+	buttonContainer.appendChild(returnButton);
 	winWrapper.appendChild(winMessage);
 	winWrapper.appendChild(buttonContainer);
 	ctx.canvas.parentElement?.appendChild(winWrapper);
-
-	stop();
 }
 
-export { createCanvas, drawScore, checkKeyPresses, keyHandler, checkForWinner,
+export { createCanvas, drawScore, checkKeyPresses, keyHandler, showWinScreen,
 		showReadyScreen };

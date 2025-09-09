@@ -5,7 +5,7 @@ const Fastify = require('fastify');
 const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser } = require('./user.js');
 
 const fastify = Fastify();
-// const webSocketPlugin = require('@fastify/websocket')
+const webSocketPlugin = require('@fastify/websocket')
 
 const cors = require('@fastify/cors');
 
@@ -15,58 +15,73 @@ const dotenv = require('dotenv');
 const speakeasy = require('speakeasy');
 dotenv.config({path: './src/.env'});
 
-// // ! MultiPlayer handler
+// ! MultiPlayer handler
 
-// const { roomHandler } = require('./game/roomHandler.js');
-// const rooms = new roomHandler();
+const { roomHandler } = require('./game/roomHandler.js');
+const rooms = new roomHandler();
 
-// fastify.register(webSocketPlugin);
+fastify.register(webSocketPlugin);
 
-// fastify.post("/rooms", async (request, reply) => {
-// 	const { mode } = request.body || {};
-// 	if (!["ai", "pvp", "tournament"].includes(mode))
-// 		return reply.code(400).send({ error: "Invalid game mode" });
+fastify.post("/rooms", async (request, reply) => {
+	const { mode } = request.body || {};
+	if (!["ai", "pvp", "tournament"].includes(mode))
+		return reply.code(400).send({ error: "Invalid game mode" });
 
-// 	const room = rooms.create(mode);
-//   	return reply.send({ roomId: room.id, mode: room.mode });
-// });
+	const room = rooms.create(mode);
+	console.log(`Room created: ${room.id} (mode: ${room.mode})`);
+  	return reply.send({ roomId: room.id, mode: room.mode });
+});
 
-// fastify.get("/game", { websocket: true}, (conn) => {
-// 	let joinedRoom = null;
+fastify.register(async function (fastify) {
+fastify.get("/game", { websocket: true}, (conn) => {
+	console.log("New WebSocket connection");
+	let joinedRoom = null;
 
-// 	conn.on("message", (raw) => {
-// 		let msg;
-// 		try { msg = JSON.parse(raw.toString())}
-// 		catch (e) { console.error("Failed to parse message:", e); return; }
+	conn.send(JSON.stringify({ type: 'connected', message: 'WebSocket connection established' }));
 
-// 		if (!joinedRoom && msg.type === 'join_room' && msg.roomId) {
-// 			const room = rooms.get(msg.roomId);
-// 			if (!room)
-// 				return conn.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
-// 			const you = room.join(conn);
-// 			joinedRoom = room;
-
-// 			conn.send(JSON.stringify({
-// 				type: "lobby_update",
-// 				you,
-// 				mode: room.mode,
-// 				// players: room.playersList(),
-// 			}));
-// 		}
-
-// 		return ;
-// 	})
-
-// 	if (joinedRoom) joinedRoom.handleMessage(conn, msg);
-
-// 	conn.on("close", () => {
-// 	  if (joinedRoom) joinedRoom.leave(conn.socket);
-// 	});
-// });
+	conn.on("message", (raw) => {
+		console.log("WS message received", raw.toString());
+		let msg;
+		
+		try { 
+			msg = JSON.parse(raw.toString())
+		} catch (e) {
+			console.error("Failed to parse message:", e); return;
+		}
 
 
+		if (!joinedRoom && msg.type === 'join_room' && msg.roomId) {
+			const room = rooms.get(msg.roomId);
+			if (!room)
+				return conn.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
+			const you = room.join(conn);
+			joinedRoom = room;
 
-// // ! -------------------
+			conn.send(JSON.stringify({
+				type: "lobby_joined",
+				id: room.id,
+				mode: room.mode,
+				players: room.playersList(),
+			}));
+		}
+		if (joinedRoom)
+			joinedRoom.handleMessage(conn, msg);
+
+		return ;
+	})
+
+
+	conn.on("close", () => {
+		console.log("WS connection closed");
+		if (joinedRoom)
+			joinedRoom.leave(conn.socket);
+	});
+});
+})
+
+
+
+// ! -------------------
 
 fastify.register(cors, {
   origin: 'http://localhost:5173',

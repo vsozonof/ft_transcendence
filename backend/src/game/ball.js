@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 16:06:58 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/27 16:06:59 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/08 18:59:47 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,28 +16,20 @@
 // ? -> The ball has properties for position, velocity, radius, and color
 // ? -> It also has methods to draw itself, reset its position, and update its state
 // ? -> The ball handles collisions with the paddles and walls, and scoring
-function createBall(ctx, paddle1, paddle2, gameState, onScore) {
+function createBall(paddle1, paddle2) {
 	const ball = {
-		x: ctx.canvas.width / 2,
-		y: ctx.canvas.height / 2,
-		vx: 0.5,
-		vy: 0.5,
-		baseSpeed: 0.6,
-		speedIncr: 0.1,
+		x: 800 / 2,
+		y: 600 / 2,
+		vx: 0,
+		vy: 0,
+		baseSpeed: 1,
+		speedIncr: 1.05,
 		radius: 10,
-		color: 'white',
-		nextDirection: undefined as number | undefined,
+		nextDirection: undefined,
 		
-		// ? Draws the ball on the canvas
-		draw() {
-			ctx.fillStyle = this.color;
-			ctx.beginPath();
-			ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-			ctx.fill();
-		},
 		
 		start() {
-			let dirX: number;
+			let dirX;
 
 			if (this.nextDirection !== undefined) {
 				dirX = this.nextDirection;	
@@ -60,8 +52,8 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 
 		// ? Resets the ball's position to the center of the canvas
 		reset() {
-			this.x = ctx.canvas.width / 2;
-			this.y = ctx.canvas.height / 2;
+			this.x = 800 / 2;
+			this.y = 600 / 2;
 			this.vx = 0;
 			this.vy = 0;
 		},
@@ -76,8 +68,8 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 				this.y = this.radius;
 				this.vy *= -1;
 			}
-			if (this.y + this.radius >= ctx.canvas.height) {
-				this.y = ctx.canvas.height - this.radius;
+			if (this.y + this.radius >= 600) {
+				this.y = 600 - this.radius;
 				this.vy *= -1;
 			}
 
@@ -134,22 +126,25 @@ function createBall(ctx, paddle1, paddle2, gameState, onScore) {
 
 			// ? Handles scoring
 			if (this.x + this.radius < 0) {
-				gameState.score2++;
 				ball.nextDirection = -1;
-				onScore();
+				return "p2";
 			}
-			if (this.x - this.radius > ctx.canvas.width) {
-				gameState.score1++;
+			if (this.x - this.radius > 800) {
 				ball.nextDirection = 1;
-				onScore();
+				return "p1";
 			}
 		},
 
 		// ? Increases the ball's speed after each paddle hit
 		// ? -> This makes the game progressively more challenging
-		// ? -> Speed increased by 10% each time
+		// ? -> Speed increased by 15% each time
 		increaseSpeed() {
-			ball.vx *= 1.1;
-			ball.vy *= 1.1;
+			ball.vx *= ball.speedIncr;
+			ball.vy *= ball.speedIncr;
 		}
 	};
+	return ball;
+}
+
+module.exports = { createBall };
+

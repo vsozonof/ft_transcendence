@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/29 16:22:58 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/09 15:31:43 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,96 +16,153 @@ import { 	createCanvas,
 			drawScore, 
 			checkKeyPresses, 
 			keyHandler, 
-			checkForWinner, showReadyScreen } from "./utils";
+			showWinScreen, showReadyScreen } from "./utils";
 import { decideAction } from "./ai";
 
-export interface PongGame {
-	canvas: HTMLCanvasElement;
-	initGame: () => void;
-}
 
+export function pongSessionHandler(lobbyKey, ws) {
+	
+	const renderer = createPongRenderer();
+	const keysPressed = keyHandler();
+	
+	const latestState = {
+		p1y: 250,
+		p2y: 250,
+		ballx: 400,
+		bally: 300,
+		countDown: 0,
+		score1: 0,
+		score2: 0,
+		animationId: 0,
+	};
+
+	async function start() {
+		renderer.setupCanvas();
+		await showReadyScreen(renderer.returnCtx(), lobbyKey.mode, ws, lobbyKey.player);
+		gameLoop();
+	}
+
+	ws.onmessage = (message) => {
+		const data = JSON.parse(message.data);
+		console.log("Received WS message:", data);
+		if (data.type === 'game_state') {
+			latestState.p1y = data.p1y;
+			latestState.p2y = data.p2y;
+			latestState.ballx = data.ballx;
+			latestState.bally = data.bally;
+			latestState.score1 = data.score1;
+			latestState.score2 = data.score2;
+		}
+		else if (data.type === 'countdown')
+			latestState.countDown = data.secondsLeft;
+		else if (data.type === 'game_over') {
+			latestState.score1 = data.scores.p1;
+			latestState.score2 = data.scores.p2;
+			
+			renderer.update(latestState.p1y,
+				latestState.p2y,
+				latestState.ballx,
+				latestState.bally,
+				latestState.countDown,
+				latestState.score1,
+				latestState.score2);
+				
+			cancelAnimationFrame(latestState.animationId);
+			showWinScreen(data.winner, renderer.returnCtx(), ws);
+		}
+	};
+
+	function gameLoop() {
+		checkKeyPresses(keysPressed, ws);
+		renderer.update(latestState.p1y,
+						latestState.p2y,
+						latestState.ballx,
+						latestState.bally,
+						latestState.countDown,
+						latestState.score1,
+						latestState.score2);
+		latestState.animationId = requestAnimationFrame(gameLoop);		
+	}
+	 
+	start();
+}
 
 // ? _______________
 // ? createPongGame()
 // ? -> Initializes the Pong game's canvas, paddles logic and ball logic
 // ? -> Returns an object with methods to start, stop, and restart the game
-export function createPongGame(): PongGame {
-	const canvas = createCanvas();
-	const ui = (canvas as any)._ui;
+export function createPongRenderer() {
 	
-	const ctx = canvas.getContext('2d')!;
+	const state = {
+		canvas: null as HTMLCanvasElement | null,
+		ctx: null as CanvasRenderingContext2D | null,
+		ui: null as any,
+		paddles: null as { p1: any; p2: any } | null,
+		ball: null as any,
+		animationId: 0,
+		countDown: 0,
+		score1: 0,
+		score2: 0,
+	};
 	
-	let animationId: number;
+	function setupCanvas() {
+		state.canvas = createCanvas();
+		state.ui = (state.canvas as any)._ui;
+		state.ctx = state.canvas.getContext('2d')!;
 
-	const { paddle1,
-			paddle2 } 		= createPaddles(ctx);
-	const 	ball 			= createBall(ctx);
-	const 	keysPressed 	= keyHandler();
-	
-	
+		const { paddle1, paddle2 } = createPaddles(state.ctx);
+		state.paddles = { p1: paddle1, p2: paddle2 };
+		state.ball = createBall(state.ctx);
+
+		draw();
+	}
+
 	// ? _________________
 	// ? draw()
 	// ? -> Clears the canvas and redraws the paddles, ball, and score
 	// ? -> This function is called in the update() loop to refresh the game state
 	function draw() {
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		drawScore(ctx);
-		paddle1.draw();
-		paddle2.draw();
-		ball.draw();
+		state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
+		console.log("Drawing frame, countdown:", state.countDown);
+		
+		drawScore(state.ctx, state.score1, state.score2);
+		state.paddles.p1.draw();
+		state.paddles.p2.draw();
+		state.ball.draw();
+
+		if (state.countDown > 0) {
+			drawCountdown(state.countDown);
+			return;
+		}
 	}
+
+	function drawCountdown(n: number) {
+		state.ctx.fillStyle = "white";
+		state.ctx.font = "80px Arial";
+		state.ctx.textAlign = "center";
+		state.ctx.fillText(n.toString(), state.canvas.width / 2, state.canvas.height / 2 - 50);
+	}
+
 	
-	// ? _________________
-	// ? startCountdown()
-	// ? -> Displays a countdown before the game starts or after a score
-	// ? -> if flag is true, will start the update() loop
-	// ? -> if flag is false, will start the ball movement
-	// function startCountdown(flag) {
-	// 	let count = 3;
-
-	// 	const countdown = document.createElement('div');
-	// 	countdown.className = `
-	// 		absolute top-1/3 left-1/2 
-	// 		-translate-x-1/2 -translate-y-1/2 
-	// 		text-white text-6xl font-bold z-50
-	// 	`;
-	// 	countdown.textContent = count.toString();
-	// 	ctx.canvas.parentElement?.appendChild(countdown);
-
-	// 	const interval = setInterval(() => {
-	// 		count--;
-	// 		if (count > 0) {
-	// 			countdown.textContent = count.toString();
-	// 		} else {
-	// 			clearInterval(interval);
-	// 			countdown.remove();
-	// 			if (flag)
-	// 				update();
-	// 			else {
-	// 				paddle1.locked = false;
-	// 				paddle2.locked = false;
-	// 				ball.start();
-	// 			}
-	// 		}
-	// 	}, 1000);
-	// }
-
-	async function initGame() {
-		// await showReadyScreen(ctx);
-		// startCountdown(1);
-		update();
+	function update(p1y: number, p2y: number, ballx: number, bally: number, countDown: number, score1: number, score2: number) {
+		state.paddles.p1.y = p1y;
+		state.paddles.p2.y = p2y;
+		state.ball.x = ballx;
+		state.ball.y = bally;
+		state.countDown = countDown;
+		state.score1 = score1;
+		state.score2 = score2;
+		draw();
 	}
 
-	function update() {
-		// if	(checkForWinner(ctx))
-		// 	return;
-		// checkKeyPresses(keysPressed);
-		draw();
-		animationId = requestAnimationFrame(update);
+	function returnCtx() {
+		return state.ctx;
 	}
 
 	return {
-		canvas,
-		initGame,
+		setupCanvas,
+		returnCtx,
+		update,
+		drawCountdown,
 	};
 }
