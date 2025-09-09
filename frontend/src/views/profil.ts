@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/30 13:41:05 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/03 11:00:28 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,22 @@ export async function profileHandler(): Promise<void> {
 	const token = localStorage.getItem('token');
 	if (!token) {
 		alert("Token manquant, veuillez vous reconnecter.");
-		await loginHandler();
+		launchApp();
 		return;
 	}
 	else {
+		const res = await fetch('http://127.0.0.1:3000/verifActivity', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+		if (!res.ok) {
+			alert("vous avez ete deconnecte pour inactivite")
+			localStorage.removeItem('token');
+			launchApp();
+			return;
+		}
 		const user = await fetch('http://127.0.0.1:3000/getUserByToken', {
 				method: 'GET',
 				headers: {
@@ -50,6 +62,136 @@ export async function profileHandler(): Promise<void> {
 	wrapper.className = `
 		flex flex-col justify-center items-center gap-10 p-10 w-full h-screen bg-gray-100
 	`;
+	// ---- Bloc Validation Suppresission Compte
+	const Validation_suppression = document.createElement('div');
+	Validation_suppression.className = `bg-white p-6 rounded-lg flex flex-col shadow-md flex gap-6 items-center`;
+
+	const valTitle = document.createElement('h2');
+	valTitle.textContent = 'Validation de la suppression du compte';
+	valTitle.className = 'text-xl font-bold mb-4';
+
+	const valInput = document.createElement('input');
+	valInput.type = 'password';
+	valInput.placeholder = "Supprimer";
+	valInput.className = 'w-full mb-4 px-3 py-2 border rounded';
+
+	const btnBox = document.createElement('div');
+	btnBox.className = 'flex gap-4';
+
+	const valBtn = document.createElement('button');
+	valBtn.textContent = "Supprimer"
+	valBtn.className = 'bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700';
+
+	const errorMessageb = document.createElement('div');
+	errorMessageb.className = 'text-red-500 text-sm mb-2 hidden';
+	errorMessageb.textContent = 'Invalid key';
+
+	const valBBtn = document.createElement('button');
+	valBBtn.textContent = 'Annuler';
+	valBBtn.className = 'bg-gray-300 text-black py-2 px-4 rounded hover:bg-gray-400';
+
+	Validation_suppression.appendChild(valTitle);
+	Validation_suppression.appendChild(valInput);
+	Validation_suppression.appendChild(errorMessageb);
+	Validation_suppression.appendChild(btnBox);
+	btnBox.appendChild(valBtn);
+	btnBox.appendChild(valBBtn);
+
+	valBtn.addEventListener('click', async () => {
+		const inputValue = valInput.value;
+		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${token}`
+			}
+		});
+		if (!activ.ok) {
+			alert("vous avez ete deconnecte pour inactivite")
+			localStorage.removeItem('token');
+			background.removeChild(wrapper);
+			launchApp();
+			return;
+		}
+		const is2fa = await fetch('http://127.0.0.1:3000/isit2fa', {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${token}`
+			}
+		});
+		if (is2fa.ok){
+			const data = await is2fa.json();
+			if (data.is2fa) {
+				const code = await fetch('http://127.0.0.1:3000/tfaLogin', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({ key:valInput.value })
+				});
+				if (code.ok) {
+					const supp =await fetch('http://127.0.0.1:3000/deleteAccount', {
+						method: 'POST',
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					if (supp.ok) {
+						alert("Compte supprimé avec succès");
+						localStorage.removeItem('token');
+						background.removeChild(wrapper);
+						background.removeChild(overlay);
+						launchApp();
+					}
+					else
+						alert("Erreur lors de la suppression du compte");
+				}
+			} else {
+				const supp = await fetch('http://127.0.0.1:3000/login', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ username: localStorage.getItem('username'), password: valInput.value })
+				});
+				if (supp.ok) {
+					const supp =await fetch('http://127.0.0.1:3000/deleteAccount', {
+						method: 'POST',
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					if (supp.ok) {
+						alert("Compte supprimé avec succès");
+						localStorage.removeItem('token');
+						background.removeChild(wrapper);
+						background.removeChild(overlay);
+						launchApp();
+					}
+					else
+						alert("Erreur lors de la suppression du compte");
+				}
+			}
+		}
+		errorMessageb.classList.remove('hidden');
+	});
+
+	valBBtn.addEventListener('click', async () => {
+		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${token}`
+			}
+		});
+		if (!activ.ok) {
+			alert("vous avez ete deconnecte pour inactivite")
+			localStorage.removeItem('token');
+			background.removeChild(wrapper);
+			launchApp();
+			return;
+		}
+		overlay.classList.add('hidden');
+	});
 
 	// ---- Bloc infos utilisateur (gauche)
 	const userBox = document.createElement('div');
@@ -122,6 +264,19 @@ export async function profileHandler(): Promise<void> {
 	userBox.appendChild(userInfo);
 
 	updatebutton.addEventListener('click', async () => {
+		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+		if (!activ.ok) {
+			alert("vous avez ete deconnecte pour inactivite")
+			localStorage.removeItem('token');
+			background.removeChild(wrapper);
+			launchApp();
+			return;
+		}
 		const res = await fetch('http://127.0.0.1:3000/updateUser', {
 			method: 'POST',
 			headers: {
@@ -153,7 +308,19 @@ export async function profileHandler(): Promise<void> {
 	avButton.addEventListener('drop', async (e) => {
 		e.preventDefault();
 		const file = e.dataTransfer?.files[0];
-
+		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+		if (!activ.ok) {
+			alert("vous avez ete deconnecte pour inactivite")
+			localStorage.removeItem('token');
+			background.removeChild(wrapper);
+			launchApp();
+			return;
+		}
 		if (!file) {
 			alert("No file dropped");
 			return;
@@ -217,6 +384,19 @@ export async function profileHandler(): Promise<void> {
 	pwdBtn.className = 'mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 block ml-auto';
 
 	pwdBtn.addEventListener('click', async () => {
+		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+		if (!activ.ok) {
+			alert("vous avez ete deconnecte pour inactivite")
+			localStorage.removeItem('token');
+			background.removeChild(wrapper);
+			launchApp();
+			return;
+		}
 		const res = await fetch('http://127.0.0.1:3000/changePassword', {
 			method: 'POST',
 			headers: {
@@ -255,6 +435,19 @@ export async function profileHandler(): Promise<void> {
 	twofaBtn.className = 'w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700';
 
 	twofaBtn.addEventListener('click', async () => {
+		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+		if (!activ.ok) {
+			alert("vous avez ete deconnecte pour inactivite")
+			localStorage.removeItem('token');
+			background.removeChild(wrapper);
+			launchApp();
+			return;
+		}
 		const res = await fetch('http://127.0.0.1:3000/isit2fa', {
 			method: 'GET',
 			headers: {
@@ -296,20 +489,35 @@ export async function profileHandler(): Promise<void> {
 	supBtn.className = 'w-full bg-red-600 text-white py-2 rounded hover:bg-red-700';
 
 	supBtn.addEventListener('click', async () => {
-		const res = await fetch('http://127.0.0.1:3000/deleteAccount', {
-			method: 'POST',
+		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+		if (!activ.ok) {
+			alert("vous avez ete deconnecte pour inactivite")
+			localStorage.removeItem('token');
+			background.removeChild(wrapper);
+			launchApp();
+			return;
+		}
+		const res = await fetch('http://127.0.0.1:3000/isit2fa', {
+			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`
 			}
 		});
 		if (res.ok) {
-			alert("Compte supprimé !");
-			localStorage.removeItem('token');
-			background.removeChild(wrapper);
-			launchApp();
-		} else {
-			alert("Erreur lors de la suppression du compte");
+			const data = await res.json();
+			if (data.is2fa === 1) {
+
+				valInput.placeholder = "Taper votre code 2FA";
+			} else {
+				valInput.placeholder = "Taper votre mot de passe";
+			}
 		}
+		overlay.classList.remove('hidden');
 	});
 
 	supBox.appendChild(supTitle);
@@ -330,10 +538,22 @@ export async function profileHandler(): Promise<void> {
 	`;
 	backBox.appendChild(backBtn);
 
-		backBtn.addEventListener('click', () => {
-			background.removeChild(wrapper);
-			launchApp();
-			return;
+		backBtn.addEventListener('click', async () => {
+			const res = await fetch('http://127.0.0.1:3000/verifActivity', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+			if (res.ok) {
+				background.removeChild(wrapper);
+				launchApp();
+			}
+			else {
+				localStorage.removeItem('token');
+				background.removeChild(wrapper);
+				launchApp();
+			}
 		});
 
 	// ---- Colonne de gauche (2 blocs)
@@ -344,9 +564,16 @@ export async function profileHandler(): Promise<void> {
 	const rightCol = document.createElement('div');
 	rightCol.className = 'flex flex-col gap-6 w-1/2';
 
+	// ---- Overlay
+		const overlay = document.createElement('div');
+	overlay.className = `fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden`;
+
 	// ---- Build page
 	const topRow = document.createElement('div');
 	topRow.className = 'flex gap-10 w-full mx-auto items-start';
+
+	overlay.appendChild(Validation_suppression);
+
 	rightCol.appendChild(pwdBox);
 	rightCol.appendChild(twofaBox);
 	leftCol.appendChild(userBox);
@@ -358,5 +585,6 @@ export async function profileHandler(): Promise<void> {
 	wrapper.appendChild(topRow);
 	wrapper.appendChild(backCol);
 
+	background.appendChild(overlay);
 	background.appendChild(wrapper);
 }

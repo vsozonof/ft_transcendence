@@ -1,8 +1,10 @@
 // LE BACKEND COMMENCE ICI HEHEHEHEHEHE
 
-const Fastify = require('fastify');
+const fastify = require('fastify')({
+	bodyLimit: 10 * 1024 * 1024
+});
 
-const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser } = require('./user.js');
+const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser, verifActivity, updateActivity } = require('./user.js');
 
 const fastify = Fastify();
 const webSocketPlugin = require('@fastify/websocket')
@@ -397,14 +399,13 @@ fastify.post('/uploadAvatar', async (request, reply) => {
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
 	}
-	console.log(avatar);
 	try {
 		const decoded = fastify.jwt.verify(token);
 		await majAvatar(decoded.id, avatar);
 		reply.send({ message: 'Avatar updated successfully' });
 	}
 	catch (err){
-		console.error('Error updating avatar:', err);
+		console.log('Error updating avatar:', err);
 		reply.code(500).send({ error: 'Failed to update avatar' });
 	}
 
@@ -425,6 +426,43 @@ fastify.post('/deleteAccount', async (request, reply) => {
 	} catch (err) {
 		console.error('Error deleting account:', err);
 		reply.code(500).send({ error: 'Failed to delete account' });
+	}
+});
+
+fastify.get('/verifActivity', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	const user = await getUserByUsername(fastify.jwt.verify(token).username);
+	if (!user) {
+		return reply.code(404).send({ error: 'User not found' });
+	}
+	const isActive = await verifActivity(user);
+	if (isActive) {
+		await updateActivity(user);
+		reply.send({ message: 'User is active' });
+	} else {
+		reply.code(500).send({ message: 'User is inactive' });
+	}
+});
+
+fastify.post('/updateActivity', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	console.log('Token received for activity update:', token);
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	const user = await getUserByUsername(fastify.jwt.verify(token).username);
+	if (!user) {
+		return reply.code(404).send({ error: 'User not found' });
+	}
+	try {
+		await updateActivity(user);
+		reply.send({ message: 'Activity updated successfully' });
+	} catch (err) {
+		console.error('Error updating activity:', err);
+		reply.code(500).send({ error: 'Failed to update activity' });
 	}
 });
 

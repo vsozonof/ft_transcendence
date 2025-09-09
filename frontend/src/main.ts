@@ -2,6 +2,7 @@ import { loginHandler } from "./views/login";
 import { profileHandler } from "./views/profil";
 import { createMainMenu } from "./views/mainMenu";
 import { createPongGame } from "./game/pong";
+import { friendsHandler } from "./views/friends";
 import { matchHandler } from "./game/matchHandler";
 
 const app = document.getElementById('app');
@@ -41,14 +42,15 @@ export async function launchApp() {
 			matchHandler('ai');
   		},
 		onProfile: () => {
-			mainMenu.remove();
-			profileHandler();
+				mainMenu.remove();
+				profileHandler();
 		},
 		onRankings: () => {
 			mainMenu.remove();
 		},
-		onSettings: () => {
+		onFriends: () => {
 			mainMenu.remove();
+			friendsHandler();
 		},
 		onLogout: () => {
 			localStorage.removeItem('token');

@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/30 14:31:59 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/03 17:18:44 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
 const speakeasy = require('speakeasy');
+const { default: fastifyJwt } = require('@fastify/jwt');
 
 async function getUserByUsername(username) {
 	return new Promise((resolve, reject) => {
@@ -45,7 +46,7 @@ async function createUser(mail, mdp, username) {
   const imageBuffer = fs.readFileSync(path.join(__dirname, "avatar", "IMG_4205.png"));
   const base64Image = "data:image/png;base64," + imageBuffer.toString('base64');
   db.serialize(() => {
-	db.run(`INSERT OR IGNORE INTO users (username, email, password, avatar) VALUES (?, ?, ?, ?)`, [user.username, user.email, user.password, base64Image],
+	db.run(`INSERT OR IGNORE INTO users (username, email, password, avatar, last_activity) VALUES (?, ?, ?, ?, ?)`, [user.username, user.email, user.password, base64Image, Date.now()],
 	(err) => {
 		if (err) {
 			console.error('Database error : ', err.message);
@@ -272,6 +273,32 @@ async function deleteUser(id) {
 	});
 }
 
+async function verifActivity(user) {
+	console.log('Verifying activity for user:', user.username);
+	const time = Date.now()
+	lastActivity = user.last_activity;
+	if (lastActivity && time - lastActivity > 5 * 60 * 1000) { // 5 minutes
+		console.log('User has been inactive for more than 5 minutes : ');
+		fastifyJwt
+		return false;
+	} else {
+		return true;
+	}
+}
+
+async function updateActivity(user) {
+	const time = Date.now()
+	db.serialize(() => {
+		db.run(`UPDATE users SET last_activity = ? WHERE id = ?`, [time, user.id], (err) => {
+			if (err) {
+				throw new Error('Failed to update activity');
+			} else {
+				console.log('Activity updated successfully');
+			}
+		});
+	});
+}
+
 // async function main(){
 // 	const code = await create2faqrcode('rostrub');
 // 	console.log('QR Code:', code.qrcode);
@@ -288,7 +315,9 @@ module.exports= {
 	disable2fa,
 	updateUser,
 	majAvatar,
-	deleteUser
+	deleteUser,
+	verifActivity,
+	updateActivity
 };
 
 // main();
