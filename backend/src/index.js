@@ -6,7 +6,6 @@ const fastify = require('fastify')({
 
 const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser, verifActivity, updateActivity } = require('./user.js');
 
-const fastify = Fastify();
 const webSocketPlugin = require('@fastify/websocket')
 
 const cors = require('@fastify/cors');
@@ -26,7 +25,7 @@ fastify.register(webSocketPlugin);
 
 fastify.post("/rooms", async (request, reply) => {
 	const { mode } = request.body || {};
-	if (!["ai", "pvp", "tournament"].includes(mode))
+	if (!["ai", "pvp", "tournament", "local"].includes(mode))
 		return reply.code(400).send({ error: "Invalid game mode" });
 
 	const room = rooms.create(mode);

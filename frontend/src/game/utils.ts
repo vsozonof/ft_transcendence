@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/09 15:40:30 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/10 16:47:55 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,28 +102,28 @@ function keyHandler() {
 // ? -> Will lock paddle2 if gamemode is not 'local'
 // ? -> The function will handle the AI movements aswell
 let lastMoveSent = 0;
-function checkKeyPresses(keysPressed, ws: WebSocket) {
+function checkKeyPresses(keysPressed, ws: WebSocket, mode: string) {
 
 	const now = performance.now();
 	if (now - lastMoveSent < 16) return;
 		lastMoveSent = now;
 
 	if ((keysPressed['s'] || keysPressed['S'])) {
-		console.log("Sending move down");
-		ws.send(JSON.stringify({ type: 'move', direction: 'down' }) );
+		ws.send(JSON.stringify({ type: 'move', player: 1, direction: 'down' }) );
 	}
 		
 	if ((keysPressed['w'] || keysPressed['W'])) {
-		console.log("Sending move up");
-		ws.send(JSON.stringify({ type: 'move', direction: 'up' }) );
+		ws.send(JSON.stringify({ type: 'move', player: 1, direction: 'up' }) );
 	}
-	
-	// if (keysPressed['ArrowDown'])
-		// paddle2.y += paddle2.speed;
 
-	// if (keysPressed['ArrowUp'])
-		// paddle2.y -= paddle2.speed;
-
+	if (mode === 'local') {
+		if ((keysPressed['ArrowDown'])) {
+			ws.send(JSON.stringify({ type: 'move', player: 2, direction: 'down' }) );
+		}
+		if ((keysPressed['ArrowUp'])) {
+			ws.send(JSON.stringify({ type: 'move', player: 2, direction: 'up' }) );
+		}
+	}
 }
 
 function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "multiplayer" | "ai", ws: WebSocket, side: number): Promise<void> {
@@ -173,7 +173,8 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "multipl
 		buttonContainer.append(readyP1, readyP2);
 		readyP2.disabled = true;
 		readyP2.textContent = '🤖 AI is always ready';
-
+	}
+		
 	const onMsg = (ev: MessageEvent) => {
 		let msg;
 		
@@ -215,7 +216,7 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "multipl
     readyWrapper.append(title, buttonContainer);
     ctx.canvas.parentElement?.appendChild(readyWrapper);
 
-  }});
+  });
 }
 
 // ? _______________

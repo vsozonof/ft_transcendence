@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/09 15:09:46 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/10 16:36:26 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,10 +90,10 @@ class gameRoom {
 	}
 
 	allRequiredReady() {
-		if (this.mode === "ai") {
-			console.log("AI mode, only player 1 needs to be ready");
+		if (this.mode === "ai")
 			return !!this.players[0]?.ready;
-		}
+		if (this.mode === "local")
+			return true;
 		return this.players.every(p => !!p.ready);
 	}
 
@@ -181,7 +181,7 @@ class gameRoom {
 			
 			if (this.paddleCounter++ % this.paddleInterval === 0) {
 				if (this.mode === "ai" && this.aiAction.stepsNeeded > 0) {
-					const moveMsg = { type: "move", direction: this.aiAction.direction };
+					const moveMsg = { type: "move", player: 2, direction: this.aiAction.direction };
 					this.handleMessage(this.players[1].socket, moveMsg);
 					this.aiAction.stepsNeeded--;
 				}
@@ -226,9 +226,9 @@ class gameRoom {
 		else if (msg.type === "move") {
 			const player = this.players.find(p => p.socket === socket);
 			if (player) {
-				if (player.side === 0)
+				if (msg.player === 1)
 					this.movePaddle(this.paddle1, msg.direction, 600);
-				else if (player.side === 1)
+				else if (msg.player === 2)
 					this.movePaddle(this.paddle2, msg.direction, 600);
 			}
 		}

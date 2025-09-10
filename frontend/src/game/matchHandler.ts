@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/30 20:26:41 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/08 15:14:25 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/10 15:18:20 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,10 @@ import { pongSessionHandler } from "./pong";
 export function matchHandler(mode) {
 	switch (mode) {
 		case 'local':
-			console.log('Local mode not implemented yet');
+			createAndJoinRoom(mode);
 			break;
 		case 'ai':
-			createAndJoinAiRoom();
+			createAndJoinRoom(mode);
 			break;
 		case 'pvp':
 			console.log('PVP mode not implemented yet');
@@ -27,13 +27,13 @@ export function matchHandler(mode) {
 			console.log('Tournament mode not implemented yet');
 			break;
 		default:
-		throw new Error('Invalid game mode');
+			throw new Error('Invalid game mode');
 	}
 }
 
-async function createAndJoinAiRoom() {
+async function createAndJoinRoom(mode: string) {
 	const lobbyKey = {
-		mode: 'ai',
+		mode,
 		roomId: undefined,
 		player: undefined
 	}
@@ -42,7 +42,7 @@ async function createAndJoinAiRoom() {
 		const res = await fetch("http://localhost:3000/rooms", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ mode: "ai" })
+			body: JSON.stringify({ mode })
 			});
 		const data = await res.json();
 		
@@ -73,6 +73,6 @@ async function createAndJoinAiRoom() {
         ws.onerror = (e) => console.log("WS error " + e);
 
 	} catch (err) {
-		console.error("Error creating AI game:", err);
+		console.error("Error creating game:", err);
 	}
 }

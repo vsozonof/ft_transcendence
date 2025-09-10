@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/09 15:31:43 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/10 16:46:51 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ export function pongSessionHandler(lobbyKey, ws) {
 
 	async function start() {
 		renderer.setupCanvas();
+		console.log("RIGHT BEFORE SHOWING READY SCREEN");
 		await showReadyScreen(renderer.returnCtx(), lobbyKey.mode, ws, lobbyKey.player);
 		gameLoop();
 	}
@@ -73,7 +74,7 @@ export function pongSessionHandler(lobbyKey, ws) {
 	};
 
 	function gameLoop() {
-		checkKeyPresses(keysPressed, ws);
+		checkKeyPresses(keysPressed, ws, lobbyKey.mode);
 		renderer.update(latestState.p1y,
 						latestState.p2y,
 						latestState.ballx,

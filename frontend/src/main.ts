@@ -41,6 +41,10 @@ export async function launchApp() {
     		mainMenu.remove();
 			matchHandler('ai');
   		},
+		onLocalPlay: () => {
+			mainMenu.remove();
+			matchHandler('local');
+		},
 		onProfile: () => {
 				mainMenu.remove();
 				profileHandler();
