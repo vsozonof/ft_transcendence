@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/10 16:36:26 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/11 17:08:55 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,16 @@ class gameRoom {
 		}
 	}
 
-	join(socket) {
+	join(socket, side = null ) {
 		let slot = null;
 
 		if (this.mode === "ai")
 			slot = 0;
+		else if (side !== null) {
+			if (!this.players[side] || this.players[side].socket !== null)
+				throw new Error("Invalid side chosen");
+			slot = side;
+		}
 		else {
 			const empty = this.players.find(p => p.socket === null);
 			if (empty) slot = empty.side;
@@ -181,7 +186,7 @@ class gameRoom {
 			
 			if (this.paddleCounter++ % this.paddleInterval === 0) {
 				if (this.mode === "ai" && this.aiAction.stepsNeeded > 0) {
-					const moveMsg = { type: "move", player: 2, direction: this.aiAction.direction };
+					const moveMsg = { type: "move", player: 1, direction: this.aiAction.direction };
 					this.handleMessage(this.players[1].socket, moveMsg);
 					this.aiAction.stepsNeeded--;
 				}
@@ -226,9 +231,9 @@ class gameRoom {
 		else if (msg.type === "move") {
 			const player = this.players.find(p => p.socket === socket);
 			if (player) {
-				if (msg.player === 1)
+				if (msg.player === 0)
 					this.movePaddle(this.paddle1, msg.direction, 600);
-				else if (msg.player === 2)
+				else if (msg.player === 1)
 					this.movePaddle(this.paddle2, msg.direction, 600);
 			}
 		}

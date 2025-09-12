@@ -21,7 +21,140 @@ dotenv.config({path: './src/.env'});
 const { roomHandler } = require('./game/roomHandler.js');
 const rooms = new roomHandler();
 
+const { Tournament } = require('./game/Tournament.js');
+const tournaments = new Map();
+
 fastify.register(webSocketPlugin);
+// ! -------------------
+// ? Fix the trade of usernames and avatars between players for multiplayer games
+// ? Fix player name on end screen
+// ? Fix avatar and name on header
+// ? Fix exiting queue and sending back to main menu on error or timeout
+// ? Add a spinner for queue waiting
+// ! Do tournament logic
+// ! Do chat
+// ! Clean code - Delete what's not used - Split functions between files if needed
+// ! Add comments
+// ! fix at the end :
+// ! investigate why back and forward arrows in browser cause issues
+// ! errors? ending games if someone leaves?
+// ! Room cleaning logic
+// ! gg its over
+
+let waitingPlayer = null; 
+let tournamentQueue = [];
+fastify.post("/queue", async (request, reply) => {
+	return new Promise(async (resolve) => {
+		const { mode, token } = request.body || {};
+		let user;
+		
+		try {
+			const decoded = fastify.jwt.verify(token);
+			user = await getUserByUsername(decoded.username);
+			if (!user) {
+				return reply.send({ error: 'User not found' });
+			}
+		} catch (err) {
+			console.error('Error verifying token:', err);
+			return reply.send({ error: 'Invalid token' });
+		}
+
+		if (!["pvp", "tournament"].includes(mode))
+			return reply.send({ error: "Invalid game mode" });
+
+		if (["pvp"].includes(mode)) {
+			if (!waitingPlayer) {
+				console.log("Player added to waiting queue");
+				const timeout = setTimeout(() => { 
+					console.log("Queue timeout, no match found");
+					reply.send({ error: "timeout" });
+					waitingPlayer = null;
+					resolve();
+				}, 10 * 1000);
+
+				waitingPlayer = { reply, timeout, resolve, user };
+
+				reply.raw.on("close", () => {
+					console.log("Client left the queue before match/timeout");
+					clearTimeout(timeout);
+					waitingPlayer = null;
+					resolve();
+				});
+
+			} else {
+				console.log("Match found, creating room");
+				const room = rooms.create("pvp");
+				clearTimeout(waitingPlayer.timeout);
+
+				waitingPlayer.reply.send({
+					roomId: room.id,
+					side: 0,
+					self: { username: waitingPlayer.user.username, avatar: waitingPlayer.user.avatar },
+					opponent: { username: user.username, avatar: user.avatar }
+				});
+				waitingPlayer.resolve();
+
+				reply.send({
+					roomId: room.id,
+					side: 1,
+					self: { username: user.username, avatar: user.avatar },
+					opponent: { username: waitingPlayer.user.username, avatar: waitingPlayer.user.avatar }
+				});
+				resolve();
+				waitingPlayer = null;
+			}
+		}
+		else if (["tournament"].includes(mode)) {
+			if (tournamentQueue.length < 3) {
+				console.log("Player added to waiting queue");
+				const timeoutTournament = setTimeout(() => { 
+					console.log("Queue timeout, no match found");
+					reply.send({ error: "timeout" });
+					tournamentQueue = tournamentQueue.filter(p => p.reply !== reply);
+					resolve();
+				}, 60 * 1000);
+
+				tournamentQueue.push({ reply, timeoutTournament, resolve, user });
+
+				reply.raw.on("close", () => {
+					console.log("Client left the queue before match/timeout");
+					clearTimeout(timeoutTournament);
+					tournamentQueue = tournamentQueue.filter(p => p.reply !== reply);
+					resolve();
+				});
+
+			} else {
+				console.log("4 players found, creating tournament");
+				
+				tournamentQueue.push({ reply, timeoutTournament: null, resolve, user });
+				tournamentQueue.forEach(p => clearTimeout(p.timeoutTournament));
+
+				const id = "t_" + Math.random().toString(36).slice(2, 10);
+				const players = tournamentQueue.map((p, i) => ({
+					id: i,
+					username: p.user.username,
+					avatar: p.user.avatar
+				}));
+				
+				const tournament = new Tournament(id, players);
+				tournaments.set(id, tournament);
+
+
+				tournamentQueue.forEach((p, index) => {
+					p.reply.send({
+						tournamentId: tournament.id,
+						playerNumber: index,
+						players,
+					});
+					p.resolve();
+				});
+
+				tournamentQueue = [];
+			}
+		}
+
+	});
+});
 
 fastify.post("/rooms", async (request, reply) => {
 	const { mode } = request.body || {};
@@ -35,13 +168,9 @@ fastify.post("/rooms", async (request, reply) => {
 
 fastify.register(async function (fastify) {
 fastify.get("/game", { websocket: true}, (conn) => {
-	console.log("New WebSocket connection");
 	let joinedRoom = null;
 
-	conn.send(JSON.stringify({ type: 'connected', message: 'WebSocket connection established' }));
-
 	conn.on("message", (raw) => {
-		console.log("WS message received", raw.toString());
 		let msg;
 		
 		try { 
@@ -55,16 +184,18 @@ fastify.get("/game", { websocket: true}, (conn) => {
 			const room = rooms.get(msg.roomId);
 			if (!room)
 				return conn.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
-			const you = room.join(conn);
+			const you = room.join(conn, msg.side);
 			joinedRoom = room;
 
 			conn.send(JSON.stringify({
 				type: "lobby_joined",
 				id: room.id,
 				mode: room.mode,
+				you,
 				players: room.playersList(),
 			}));
 		}
+		
 		if (joinedRoom)
 			joinedRoom.handleMessage(conn, msg);
 
@@ -80,7 +211,50 @@ fastify.get("/game", { websocket: true}, (conn) => {
 });
 })
 
+fastify.register(async function (fastify) {
+fastify.get("/tournament", { websocket: true}, (conn) => {
+	let joinedTournament =	null;
 
+	conn.on("message", (raw) => {
+		let msg;
+		
+		try { 
+			msg = JSON.parse(raw.toString())
+		} catch (e) {
+			console.error("Failed to parse message:", e); return;
+		}
+
+
+		if (!joinedTournament && msg.type === 'join_tournament') {
+			
+			const tournament = tournaments.get(msg.tournamentId);
+			if (!tournament)
+				return conn.send(JSON.stringify({ type: 'error', message: 'Tournament not found' }));
+			
+			const player = tournament.players.find(p => p.id === msg.playerNumber);
+			if (!player)
+				return conn.send(JSON.stringify({ type: 'error', message: 'Player not found in tournament' }));
+			player.socket = conn;
+			joinedTournament = tournament;
+
+			conn.send(JSON.stringify({
+				type: "tournament_joined",
+				tournamentId: tournament.id,
+				playerNumber: player.id
+			}));
+		}
+		
+		// if (joinedRoom)
+			// joinedRoom.handleMessage(conn, msg);
+
+		return ;
+	})
+
+
+	conn.on("close", () => {
+	});
+});
+})
 
 // ! -------------------
 

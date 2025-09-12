@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/10 16:47:55 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/12 06:33:04 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,10 +63,9 @@ function createCanvas() {
 	canvasContainer.appendChild(canvas);
 	background.appendChild(canvasContainer);
 	
-	(canvas as any)._ui = { p1: { nameEl: p1Name, img: p1Img }, p2: { nameEl: p2Name, img: p2Img } };
+	(canvas as any)._ui = { p1: { name: p1Name, img: p1Img }, p2: { name: p2Name, img: p2Img } };
 	return canvas;
 }
-
 
 // ? _______________
 // ? drawScore()
@@ -102,32 +101,33 @@ function keyHandler() {
 // ? -> Will lock paddle2 if gamemode is not 'local'
 // ? -> The function will handle the AI movements aswell
 let lastMoveSent = 0;
-function checkKeyPresses(keysPressed, ws: WebSocket, mode: string) {
+function checkKeyPresses(keysPressed, ws: WebSocket, mode: string, player: number) {
 
 	const now = performance.now();
 	if (now - lastMoveSent < 16) return;
 		lastMoveSent = now;
 
 	if ((keysPressed['s'] || keysPressed['S'])) {
-		ws.send(JSON.stringify({ type: 'move', player: 1, direction: 'down' }) );
+		ws.send(JSON.stringify({ type: 'move', player, direction: 'down' }) );
 	}
 		
 	if ((keysPressed['w'] || keysPressed['W'])) {
-		ws.send(JSON.stringify({ type: 'move', player: 1, direction: 'up' }) );
+		ws.send(JSON.stringify({ type: 'move', player, direction: 'up' }) );
 	}
 
 	if (mode === 'local') {
 		if ((keysPressed['ArrowDown'])) {
-			ws.send(JSON.stringify({ type: 'move', player: 2, direction: 'down' }) );
+			ws.send(JSON.stringify({ type: 'move', player: 1, direction: 'down' }) );
 		}
 		if ((keysPressed['ArrowUp'])) {
-			ws.send(JSON.stringify({ type: 'move', player: 2, direction: 'up' }) );
+			ws.send(JSON.stringify({ type: 'move', player: 1, direction: 'up' }) );
 		}
 	}
 }
 
-function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "multiplayer" | "ai", ws: WebSocket, side: number): Promise<void> {
+function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | "ai", ws: WebSocket, side: number): Promise<void> {
   return new Promise((resolve) => {
+	console.log("Showing ready screen for mode:", mode, "side:", side);
     const readyWrapper = document.createElement('div');
     readyWrapper.className = `
       absolute top-1/2 left-1/2 
@@ -164,7 +164,7 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "multipl
         	readyP2.textContent = '✅';
     	};
     }
-	else if (mode === "multiplayer") {
+	else if (mode === "pvp") {
 		buttonContainer.append(readyP1, readyP2);
 		readyP2.disabled = true;
 		readyP2.textContent = 'Opponent: ⏳ Waiting…';
@@ -185,7 +185,7 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "multipl
 		}
 
 		if (msg.type === "lobby_update") {
-			if (msg.mode === "multiplayer") {
+			if (msg.mode === "pvp") {
 				const other = side ^ 1;
 				const otherReady = !!msg.players?.[other]?.ready;
 			
@@ -224,7 +224,13 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "multipl
 // ? -> Displays a win message when a player reaches the score limit
 // ? -> Stops the game and shows the winner
 // ? -> Provides buttons to play again or return to the main menu
-function showWinScreen(winner: string, ctx, ws: WebSocket) {
+function showWinScreen(winner: string, ctx, ws: WebSocket, lobbyKey) {
+
+	if (winner === "p1") 
+		winner = lobbyKey.username1 || "Player 1";
+	else if (winner === "p2") 
+		winner = lobbyKey.username2 || "Player 2";
+	
 	const winWrapper = document.createElement('div');
 	winWrapper.className = `
 		absolute top-1/2 left-1/2 
@@ -260,5 +266,25 @@ function showWinScreen(winner: string, ctx, ws: WebSocket) {
 	ctx.canvas.parentElement?.appendChild(winWrapper);
 }
 
+async function updateUserInfos() {
+	const user = await fetch('http://127.0.0.1:3000/getUserByToken', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				},
+			});
+		if (!user.ok) {
+			alert("Erreur lors de la récupération des informations utilisateur.");
+		}
+		else {
+			const data = await user.json();
+			localStorage.setItem('username', data.username);
+			localStorage.setItem('email', data.email);
+			localStorage.setItem('avatar', data.avatar);
+			console.log(localStorage.getItem('avatar'));
+		}
+}
+
 export { createCanvas, drawScore, checkKeyPresses, keyHandler, showWinScreen,
-		showReadyScreen };
+		showReadyScreen, updateUserInfos };

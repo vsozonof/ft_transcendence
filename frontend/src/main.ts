@@ -1,7 +1,6 @@
 import { loginHandler } from "./views/login";
 import { profileHandler } from "./views/profil";
 import { createMainMenu } from "./views/mainMenu";
-import { createPongGame } from "./game/pong";
 import { friendsHandler } from "./views/friends";
 import { matchHandler } from "./game/matchHandler";
 
@@ -44,6 +43,14 @@ export async function launchApp() {
 		onLocalPlay: () => {
 			mainMenu.remove();
 			matchHandler('local');
+		},
+		onOnlinePlay: () => {
+			mainMenu.remove();
+			matchHandler('pvp');
+		},
+		onTournament: () => {
+			mainMenu.remove();
+			matchHandler('tournament');
 		},
 		onProfile: () => {
 				mainMenu.remove();

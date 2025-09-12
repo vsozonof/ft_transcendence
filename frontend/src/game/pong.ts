@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/10 16:46:51 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/12 06:43:50 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,21 @@ import { 	createCanvas,
 			checkKeyPresses, 
 			keyHandler, 
 			showWinScreen, showReadyScreen } from "./utils";
-import { decideAction } from "./ai";
 
 
 export function pongSessionHandler(lobbyKey, ws) {
 	
 	const renderer = createPongRenderer();
 	const keysPressed = keyHandler();
+
+	if (lobbyKey.mode === 'local') {
+		lobbyKey.username2 = "Guest";
+		lobbyKey.avatar2 = "../assets/default.png";
+	}
+	else if (lobbyKey.mode === 'ai') {
+		lobbyKey.username2 = "Moulinette";
+		lobbyKey.avatar2 = "../assets/moulinette.png";
+	}
 	
 	const latestState = {
 		p1y: 250,
@@ -38,7 +46,7 @@ export function pongSessionHandler(lobbyKey, ws) {
 
 	async function start() {
 		renderer.setupCanvas();
-		console.log("RIGHT BEFORE SHOWING READY SCREEN");
+		renderer.setupHeader(lobbyKey.mode, lobbyKey.username1, lobbyKey.avatar1, lobbyKey.username2, lobbyKey.avatar2);
 		await showReadyScreen(renderer.returnCtx(), lobbyKey.mode, ws, lobbyKey.player);
 		gameLoop();
 	}
@@ -69,12 +77,12 @@ export function pongSessionHandler(lobbyKey, ws) {
 				latestState.score2);
 				
 			cancelAnimationFrame(latestState.animationId);
-			showWinScreen(data.winner, renderer.returnCtx(), ws);
+			showWinScreen(data.winner, renderer.returnCtx(), ws, lobbyKey);
 		}
 	};
 
 	function gameLoop() {
-		checkKeyPresses(keysPressed, ws, lobbyKey.mode);
+		checkKeyPresses(keysPressed, ws, lobbyKey.mode, lobbyKey.player);
 		renderer.update(latestState.p1y,
 						latestState.p2y,
 						latestState.ballx,
@@ -116,6 +124,14 @@ export function createPongRenderer() {
 		state.ball = createBall(state.ctx);
 
 		draw();
+	}
+
+	function setupHeader(mode: string, name1: string, img1: string, name2: string | null, img2: string | null) {
+		state.ui.p1.name.textContent = name1;
+		state.ui.p1.img.src = img1;
+
+		state.ui.p2.name.textContent = name2;
+		state.ui.p2.img.src = img2;
 	}
 
 	// ? _________________
@@ -165,5 +181,6 @@ export function createPongRenderer() {
 		returnCtx,
 		update,
 		drawCountdown,
+		setupHeader,
 	};
 }
