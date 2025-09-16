@@ -18,8 +18,7 @@ dotenv.config({path: './src/.env'});
 
 // ! MultiPlayer handler
 
-const { roomHandler } = require('./game/roomHandler.js');
-const rooms = new roomHandler();
+const rooms = require('./game/rooms.js');
 
 const { Tournament } = require('./game/Tournament.js');
 const tournaments = new Map();
@@ -31,14 +30,29 @@ fastify.register(webSocketPlugin);
 // ? Fix avatar and name on header
 // ? Fix exiting queue and sending back to main menu on error or timeout
 // ? Add a spinner for queue waiting
-// ! Do tournament logic
-// ! Do chat
+// ? DONE Do tournament logic
+// ? DONE: Design tournament UI
+// ? DONE: start first round of games
+// ? DONE: update bracket after round 1
+// ? DONE: return button
+// ? DONE: start semi finals
+// ? DONE: send back to tournament page after game
+// ? DONE: Display the winner
+// ? DONE: Give 10s before starting 1st round of tournament
+// ? DONE: Same for finals (so ppl can actually see the bracket)
+// ? DONE: Client will force-ready after 20s if not ready yet
+
+
+// TODO: End of game stats screen
+// TODO: Write game results to db
+// TODO: Do profile page
+
+
 // ! Clean code - Delete what's not used - Split functions between files if needed
-// ! Add comments
+// ! Add comments - fix inconsistencies
 // ! fix at the end :
 // ! investigate why back and forward arrows in browser cause issues
-// ! errors? ending games if someone leaves?
-// ! Room cleaning logic
+// ! check if disconnecting during tournament is handled properly and does not block
 // ! gg its over
 
 let waitingPlayer = null; 
@@ -242,10 +256,16 @@ fastify.get("/tournament", { websocket: true}, (conn) => {
 				tournamentId: tournament.id,
 				playerNumber: player.id
 			}));
+
+			if (tournament.allPlayersJoined()) {
+				console.log("All players joined, starting tournament");
+				tournament.broadcastResults();
+				tournament.startRound1();
+			}
 		}
 		
-		// if (joinedRoom)
-			// joinedRoom.handleMessage(conn, msg);
+		if (joinedTournament)
+			joinedTournament.handleMessage(conn, msg);
 
 		return ;
 	})
@@ -648,3 +668,6 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
 		console.log('SERVER LANCE');
 	}
 });
+
+
+module.exports = { rooms };

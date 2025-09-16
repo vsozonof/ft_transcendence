@@ -5,7 +5,6 @@ import { friendsHandler } from "./views/friends";
 import { matchHandler } from "./game/matchHandler";
 
 const app = document.getElementById('app');
-// export const background = document.createElement('div');
 
 export function getBackground(): HTMLDivElement {
   let bg = document.getElementById('background') as HTMLDivElement | null;

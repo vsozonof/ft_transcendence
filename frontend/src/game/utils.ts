@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/12 06:33:04 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/15 13:32:58 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,7 @@ function checkKeyPresses(keysPressed, ws: WebSocket, mode: string, player: numbe
 	}
 }
 
-function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | "ai", ws: WebSocket, side: number): Promise<void> {
+function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | "ai" | "tournament", ws: WebSocket, side: number): Promise<void> {
   return new Promise((resolve) => {
 	console.log("Showing ready screen for mode:", mode, "side:", side);
     const readyWrapper = document.createElement('div');
@@ -151,6 +151,29 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | 
     readyP2.className = 'bg-blue-600 text-white px-4 py-2 rounded w-32 hover:bg-blue-700';
     readyP2.textContent = 'Ready';
 
+	let countdown = 20;
+	let readyHostageTimer = setInterval(() => {
+		countdown--;
+		
+		if (countdown <= 0) {
+			clearInterval(readyHostageTimer);
+			sendReady();
+		}
+
+	}, 1000);
+
+	const sendReady = () => {
+		if (readyP1.disabled) 
+			return;
+
+		readyP1.disabled = true;
+		readyP1.textContent = '✅';
+
+		clearInterval(readyHostageTimer);
+
+		ws.send(JSON.stringify({ type: 'ready', side: side }) );
+	}
+
     readyP1.onclick = () => {
       readyP1.disabled = true;
       readyP1.textContent = '✅';
@@ -164,7 +187,7 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | 
         	readyP2.textContent = '✅';
     	};
     }
-	else if (mode === "pvp") {
+	else if (mode === "pvp" || mode === "tournament") {
 		buttonContainer.append(readyP1, readyP2);
 		readyP2.disabled = true;
 		readyP2.textContent = 'Opponent: ⏳ Waiting…';
@@ -185,7 +208,7 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | 
 		}
 
 		if (msg.type === "lobby_update") {
-			if (msg.mode === "pvp") {
+			if (msg.mode === "pvp" || msg.mode === "tournament") {
 				const other = side ^ 1;
 				const otherReady = !!msg.players?.[other]?.ready;
 			
@@ -226,11 +249,16 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | 
 // ? -> Provides buttons to play again or return to the main menu
 function showWinScreen(winner: string, ctx, ws: WebSocket, lobbyKey) {
 
-	if (winner === "p1") 
+	let winnerId : number;
+	if (winner === "p1") {
 		winner = lobbyKey.username1 || "Player 1";
-	else if (winner === "p2") 
+		winnerId = 0;
+	}
+	else if (winner === "p2") {
 		winner = lobbyKey.username2 || "Player 2";
-	
+		winnerId = 1;
+	}
+
 	const winWrapper = document.createElement('div');
 	winWrapper.className = `
 		absolute top-1/2 left-1/2 
@@ -248,16 +276,30 @@ function showWinScreen(winner: string, ctx, ws: WebSocket, lobbyKey) {
 
 	const returnButton = document.createElement('button');
 	returnButton.className = `bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex-1`;
-	returnButton.textContent = 'Return to Menu';
+	if (lobbyKey.mode === "tournament")
+		returnButton.textContent = 'Return to Tournament';
+	else
+		returnButton.textContent = 'Return to Menu';
 
 	returnButton.addEventListener('click', () => {
 		winWrapper.remove();
 		ws.close();
 
-		const background = getBackground();
-		background.innerHTML = '';
+		if (lobbyKey.mode === "tournament") {
+			lobbyKey.ws_tournament.send(JSON.stringify({
+				type: "match_result",
+				game: lobbyKey.game,
+				tournamentId: lobbyKey.tournamentId,
+				playerId: lobbyKey.playerId,
+				winner: winnerId
+			}));
+		}
+		else {
+			const background = getBackground();
+			background.innerHTML = '';
 
-		launchApp();
+			launchApp();
+		}
 	});
 
 	buttonContainer.appendChild(returnButton);

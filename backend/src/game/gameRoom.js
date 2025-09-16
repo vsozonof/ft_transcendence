@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/11 17:08:55 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/13 16:01:26 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,8 +137,6 @@ class gameRoom {
 			this.score1++;
 		else 
 			this.score2++;
-
-		console.log("current score:", this.score1, "-", this.score2);
 
 		clearInterval(this.stateTick);
 		if (this.aiTick) 

@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:30:42 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/30 22:01:08 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/13 15:50:16 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ class roomHandler {
 	}
 
 	roomCleaner() {
-		console.log("🧹 Running room cleaner...");
 		const now = Date.now();
 
 		for (const [id, room] of this.rooms) {
@@ -66,13 +65,11 @@ class roomHandler {
 				if (!room._lastEmptyAt)
 					room._lastEmptyAt = now;
 				if (now - room._lastEmptyAt >= this.deathTime) {
-					console.log(`🧹 Deleting room ${id} due to inactivity`);
 					this.delete(id);
 				}
 			} else
 				room._lastEmptyAt = undefined;
 		}
-		console.log("🧹 Room cleaner finished");
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/30 20:26:41 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/12 11:07:48 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/13 15:37:27 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,8 @@ async function queueForTournament(mode: string) {
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
-
+			console.log("Received WS message:", data);
 			if (data.type === "tournament_joined") {
-				console.log("Joined tournament:", data);
 				tournamentHandler(lobbyKey, ws);
 			}
 
