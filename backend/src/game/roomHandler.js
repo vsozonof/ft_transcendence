@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:30:42 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/29 16:14:38 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/13 15:50:16 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,8 +64,9 @@ class roomHandler {
 			if (empty) {
 				if (!room._lastEmptyAt)
 					room._lastEmptyAt = now;
-				if (now - room._lastEmptyAt >= this.deathTime)
+				if (now - room._lastEmptyAt >= this.deathTime) {
 					this.delete(id);
+				}
 			} else
 				room._lastEmptyAt = undefined;
 		}

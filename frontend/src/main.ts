@@ -1,32 +1,10 @@
 import { loginHandler } from "./views/login";
 import { profileHandler } from "./views/profil";
 import { createMainMenu } from "./views/mainMenu";
-import { createPongGame } from "./game/pong";
 import { friendsHandler } from "./views/friends";
-
-// const ws = new WebSocket('ws://localhost:3000/game');
-
-// ws.onopen = () => {
-//   console.log("Connected to WS server");
-//   ws.send(JSON.stringify({ type: "hello", msg: "Ping from client" }));
-// };
-
-// ws.onmessage = (event) => {
-//   const data = event.data;
-//   console.log("Message from server:", data);
-// };
-
-// ws.onerror = (err) => {
-//   console.log("WebSocket error:", err);
-// };
-
-// ws.onclose = () => {
-//   console.log("Disconnected from WS server");
-// };
-
+import { matchHandler } from "./game/matchHandler";
 
 const app = document.getElementById('app');
-// export const background = document.createElement('div');
 
 export function getBackground(): HTMLDivElement {
   let bg = document.getElementById('background') as HTMLDivElement | null;
@@ -59,9 +37,20 @@ export async function launchApp() {
 	const mainMenu = createMainMenu({
 		onPlay: () => {
     		mainMenu.remove();
-			const game = createPongGame();
-			game.initGame();
+			matchHandler('ai');
   		},
+		onLocalPlay: () => {
+			mainMenu.remove();
+			matchHandler('local');
+		},
+		onOnlinePlay: () => {
+			mainMenu.remove();
+			matchHandler('pvp');
+		},
+		onTournament: () => {
+			mainMenu.remove();
+			matchHandler('tournament');
+		},
 		onProfile: () => {
 				mainMenu.remove();
 				profileHandler();

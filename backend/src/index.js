@@ -6,8 +6,7 @@ const fastify = require('fastify')({
 
 const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser, verifActivity, updateActivity, addFriend } = require('./user.js');
 
-// const fastify = Fastify();
-// const webSocketPlugin = require('@fastify/websocket')
+const webSocketPlugin = require('@fastify/websocket')
 
 const cors = require('@fastify/cors');
 
@@ -17,58 +16,267 @@ const dotenv = require('dotenv');
 const speakeasy = require('speakeasy');
 dotenv.config({path: './src/.env'});
 
-// // ! MultiPlayer handler
+// ! MultiPlayer handler
 
-// const { roomHandler } = require('./game/roomHandler.js');
-// const rooms = new roomHandler();
+const rooms = require('./game/rooms.js');
 
-// fastify.register(webSocketPlugin);
+const { Tournament } = require('./game/Tournament.js');
+const tournaments = new Map();
 
-// fastify.post("/rooms", async (request, reply) => {
-// 	const { mode } = request.body || {};
-// 	if (!["ai", "pvp", "tournament"].includes(mode))
-// 		return reply.code(400).send({ error: "Invalid game mode" });
-
-// 	const room = rooms.create(mode);
-//   	return reply.send({ roomId: room.id, mode: room.mode });
-// });
-
-// fastify.get("/game", { websocket: true}, (conn) => {
-// 	let joinedRoom = null;
-
-// 	conn.on("message", (raw) => {
-// 		let msg;
-// 		try { msg = JSON.parse(raw.toString())}
-// 		catch (e) { console.error("Failed to parse message:", e); return; }
-
-// 		if (!joinedRoom && msg.type === 'join_room' && msg.roomId) {
-// 			const room = rooms.get(msg.roomId);
-// 			if (!room)
-// 				return conn.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
-// 			const you = room.join(conn);
-// 			joinedRoom = room;
-
-// 			conn.send(JSON.stringify({
-// 				type: "lobby_update",
-// 				you,
-// 				mode: room.mode,
-// 				// players: room.playersList(),
-// 			}));
-// 		}
-
-// 		return ;
-// 	})
-
-// 	if (joinedRoom) joinedRoom.handleMessage(conn, msg);
-
-// 	conn.on("close", () => {
-// 	  if (joinedRoom) joinedRoom.leave(conn.socket);
-// 	});
-// });
+fastify.register(webSocketPlugin);
+// ! -------------------
+// ? Fix the trade of usernames and avatars between players for multiplayer games
+// ? Fix player name on end screen
+// ? Fix avatar and name on header
+// ? Fix exiting queue and sending back to main menu on error or timeout
+// ? Add a spinner for queue waiting
+// ? DONE Do tournament logic
+// ? DONE: Design tournament UI
+// ? DONE: start first round of games
+// ? DONE: update bracket after round 1
+// ? DONE: return button
+// ? DONE: start semi finals
+// ? DONE: send back to tournament page after game
+// ? DONE: Display the winner
+// ? DONE: Give 10s before starting 1st round of tournament
+// ? DONE: Same for finals (so ppl can actually see the bracket)
+// ? DONE: Client will force-ready after 20s if not ready yet
 
 
+// TODO: End of game stats screen
+// TODO: Write game results to db
+// TODO: Do profile page
 
-// // ! -------------------
+
+// ! Clean code - Delete what's not used - Split functions between files if needed
+// ! Add comments - fix inconsistencies
+// ! fix at the end :
+// ! investigate why back and forward arrows in browser cause issues
+// ! check if disconnecting during tournament is handled properly and does not block
+// ! gg its over
+
+let waitingPlayer = null; 
+let tournamentQueue = [];
+fastify.post("/queue", async (request, reply) => {
+	return new Promise(async (resolve) => {
+		const { mode, token } = request.body || {};
+		let user;
+		
+		try {
+			const decoded = fastify.jwt.verify(token);
+			user = await getUserByUsername(decoded.username);
+			if (!user) {
+				return reply.send({ error: 'User not found' });
+			}
+		} catch (err) {
+			console.error('Error verifying token:', err);
+			return reply.send({ error: 'Invalid token' });
+		}
+
+		if (!["pvp", "tournament"].includes(mode))
+			return reply.send({ error: "Invalid game mode" });
+
+		if (["pvp"].includes(mode)) {
+			if (!waitingPlayer) {
+				console.log("Player added to waiting queue");
+				const timeout = setTimeout(() => { 
+					console.log("Queue timeout, no match found");
+					reply.send({ error: "timeout" });
+					waitingPlayer = null;
+					resolve();
+				}, 10 * 1000);
+
+				waitingPlayer = { reply, timeout, resolve, user };
+
+				reply.raw.on("close", () => {
+					console.log("Client left the queue before match/timeout");
+					clearTimeout(timeout);
+					waitingPlayer = null;
+					resolve();
+				});
+
+			} else {
+				console.log("Match found, creating room");
+				const room = rooms.create("pvp");
+				clearTimeout(waitingPlayer.timeout);
+
+				waitingPlayer.reply.send({
+					roomId: room.id,
+					side: 0,
+					self: { username: waitingPlayer.user.username, avatar: waitingPlayer.user.avatar },
+					opponent: { username: user.username, avatar: user.avatar }
+				});
+				waitingPlayer.resolve();
+
+				reply.send({
+					roomId: room.id,
+					side: 1,
+					self: { username: user.username, avatar: user.avatar },
+					opponent: { username: waitingPlayer.user.username, avatar: waitingPlayer.user.avatar }
+				});
+				resolve();
+				waitingPlayer = null;
+			}
+		}
+		else if (["tournament"].includes(mode)) {
+			if (tournamentQueue.length < 3) {
+				console.log("Player added to waiting queue");
+				const timeoutTournament = setTimeout(() => { 
+					console.log("Queue timeout, no match found");
+					reply.send({ error: "timeout" });
+					tournamentQueue = tournamentQueue.filter(p => p.reply !== reply);
+					resolve();
+				}, 60 * 1000);
+
+				tournamentQueue.push({ reply, timeoutTournament, resolve, user });
+
+				reply.raw.on("close", () => {
+					console.log("Client left the queue before match/timeout");
+					clearTimeout(timeoutTournament);
+					tournamentQueue = tournamentQueue.filter(p => p.reply !== reply);
+					resolve();
+				});
+
+			} else {
+				console.log("4 players found, creating tournament");
+				
+				tournamentQueue.push({ reply, timeoutTournament: null, resolve, user });
+				tournamentQueue.forEach(p => clearTimeout(p.timeoutTournament));
+
+				const id = "t_" + Math.random().toString(36).slice(2, 10);
+				const players = tournamentQueue.map((p, i) => ({
+					id: i,
+					username: p.user.username,
+					avatar: p.user.avatar
+				}));
+				
+				const tournament = new Tournament(id, players);
+				tournaments.set(id, tournament);
+
+
+				tournamentQueue.forEach((p, index) => {
+					p.reply.send({
+						tournamentId: tournament.id,
+						playerNumber: index,
+						players,
+					});
+					p.resolve();
+				});
+
+				tournamentQueue = [];
+			}
+		}
+
+	});
+});
+
+fastify.post("/rooms", async (request, reply) => {
+	const { mode } = request.body || {};
+	if (!["ai", "pvp", "tournament", "local"].includes(mode))
+		return reply.code(400).send({ error: "Invalid game mode" });
+
+	const room = rooms.create(mode);
+	console.log(`Room created: ${room.id} (mode: ${room.mode})`);
+  	return reply.send({ roomId: room.id, mode: room.mode });
+});
+
+fastify.register(async function (fastify) {
+fastify.get("/game", { websocket: true}, (conn) => {
+	let joinedRoom = null;
+
+	conn.on("message", (raw) => {
+		let msg;
+		
+		try { 
+			msg = JSON.parse(raw.toString())
+		} catch (e) {
+			console.error("Failed to parse message:", e); return;
+		}
+
+
+		if (!joinedRoom && msg.type === 'join_room' && msg.roomId) {
+			const room = rooms.get(msg.roomId);
+			if (!room)
+				return conn.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
+			const you = room.join(conn, msg.side);
+			joinedRoom = room;
+
+			conn.send(JSON.stringify({
+				type: "lobby_joined",
+				id: room.id,
+				mode: room.mode,
+				you,
+				players: room.playersList(),
+			}));
+		}
+		
+		if (joinedRoom)
+			joinedRoom.handleMessage(conn, msg);
+
+		return ;
+	})
+
+
+	conn.on("close", () => {
+		console.log("WS connection closed");
+		if (joinedRoom)
+			joinedRoom.leave(conn.socket);
+	});
+});
+})
+
+fastify.register(async function (fastify) {
+fastify.get("/tournament", { websocket: true}, (conn) => {
+	let joinedTournament =	null;
+
+	conn.on("message", (raw) => {
+		let msg;
+		
+		try { 
+			msg = JSON.parse(raw.toString())
+		} catch (e) {
+			console.error("Failed to parse message:", e); return;
+		}
+
+
+		if (!joinedTournament && msg.type === 'join_tournament') {
+			
+			const tournament = tournaments.get(msg.tournamentId);
+			if (!tournament)
+				return conn.send(JSON.stringify({ type: 'error', message: 'Tournament not found' }));
+			
+			const player = tournament.players.find(p => p.id === msg.playerNumber);
+			if (!player)
+				return conn.send(JSON.stringify({ type: 'error', message: 'Player not found in tournament' }));
+			player.socket = conn;
+			joinedTournament = tournament;
+
+			conn.send(JSON.stringify({
+				type: "tournament_joined",
+				tournamentId: tournament.id,
+				playerNumber: player.id
+			}));
+
+			if (tournament.allPlayersJoined()) {
+				console.log("All players joined, starting tournament");
+				tournament.broadcastResults();
+				tournament.startRound1();
+			}
+		}
+		
+		if (joinedTournament)
+			joinedTournament.handleMessage(conn, msg);
+
+		return ;
+	})
+
+
+	conn.on("close", () => {
+	});
+});
+})
+
+// ! -------------------
 
 fastify.register(cors, {
   origin: 'http://localhost:5173',
@@ -510,3 +718,6 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
 		console.log('SERVER LANCE');
 	}
 });
+
+
+module.exports = { rooms };

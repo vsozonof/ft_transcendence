@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   mainMenu.ts                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/05 19:25:37 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/03 11:31:56 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/10 17:02:54 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@ import { profileHandler } from "./profil";
 
 interface MainMenuCallbacks {
 	onPlay: () => void;
+	onLocalPlay: () => void;
+	onOnlinePlay: () => void;
+	onTournament: () => void;
 	onProfile: () => void;
 	onRankings: () => void;
 	onFriends: () => void;
@@ -42,8 +45,29 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	title.className = 'text-2xl font-bold mb-6 text-center';
 
 	const playButton = document.createElement('button');
-	playButton.textContent = 'Play';
+	playButton.textContent = 'Play vs AI';
 	playButton.className = `
+	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
+	hover:bg-blue-700 transition-colors
+	`;
+
+	const playLocalButton = document.createElement('button');
+	playLocalButton.textContent = 'Play Local';
+	playLocalButton.className = `
+	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
+	hover:bg-blue-700 transition-colors
+	`;
+
+	const playOnlineButton = document.createElement('button');
+	playOnlineButton.textContent = 'Play Online';
+	playOnlineButton.className = `
+	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
+	hover:bg-blue-700 transition-colors
+	`;
+
+	const playTournamentButton = document.createElement('button');
+	playTournamentButton.textContent = 'Play Tournament';
+	playTournamentButton.className = `
 	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
 	hover:bg-blue-700 transition-colors
 	`;
@@ -80,6 +104,9 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 
 	mainMenu.appendChild(title);
 	mainMenu.appendChild(playButton);
+	mainMenu.appendChild(playLocalButton);
+	mainMenu.appendChild(playOnlineButton);
+	mainMenu.appendChild(playTournamentButton);
 	mainMenu.appendChild(profileButton);
 	mainMenu.appendChild(rankingsButton);
 	mainMenu.appendChild(friendsButton);
@@ -88,6 +115,9 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	mainMenuWrapper.appendChild(mainMenu);
 
 	playButton.onclick = callbacks.onPlay;
+	playLocalButton.onclick = callbacks.onLocalPlay;
+	playOnlineButton.onclick = callbacks.onOnlinePlay;
+	playTournamentButton.onclick = callbacks.onTournament;
 	profileButton.onclick = callbacks.onProfile;
 	rankingsButton.onclick = callbacks.onRankings;
 	friendsButton.onclick = callbacks.onFriends;
