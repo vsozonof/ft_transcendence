@@ -21,10 +21,12 @@ db.serialize(() => {
       avatar TEXT NOT NULL,
       secret2fa TEXT,
       is2fa BOOLEAN DEFAULT FALSE,
+      friend_list TEXT DEFAULT '[]',
       loose INTEGER DEFAULT 0,
       win INTEGER DEFAULT 0,
       activated BOOLEAN DEFAULT TRUE,
-      last_activity INTEGER DEFAULT CURRENT_TIMESTAMP
+      last_activity INTEGER DEFAULT CURRENT_TIMESTAMP,
+      last_logout INTEGER DEFAULT CURRENT_TIMESTAMP
     )
   `, (err) => {
     if (err)

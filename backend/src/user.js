@@ -6,7 +6,7 @@
 /*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/03 17:18:44 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/21 15:57:35 by rostrub          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,13 +204,16 @@ async function updateUser(id, data) {
 		throw new Error('Username already exists');
 	}
 	if (data.username && data.username !== user.username) {
-		db.serialize(() => {
-			db.run(`UPDATE users SET username = ? WHERE id = ?`, [data.username, id], (err) => {
-				if (err) {
-					console.error('Error updating username:', err.message);
-				} else {
-					console.log('Username updated successfully');
-				}
+		return new Promise((resolve, reject) => {
+			db.serialize(() => {
+				db.run(`UPDATE users SET username = ? WHERE id = ?`, [data.username, id], (err) => {
+					if (err) {
+						console.error('Error updating username:', err.message);
+						reject(new Error('Failed to update username and email'));
+					} else {
+						console.log('Username updated successfully');
+					}
+				});
 			});
 		});
 	}
@@ -219,13 +222,17 @@ async function updateUser(id, data) {
 			console.log('Invalid email format');
 			throw new Error('Invalid email format');
 		}
-		db.serialize(() => {
-			db.run(`UPDATE users SET email = ? WHERE id = ?`, [data.email, id], (err) => {
-				if (err) {
-					console.error('Error updating email:', err.message);
-				} else {
-					console.log('Email updated successfully');
-				}
+		return new Promise((resolve, reject) => {
+			db.serialize(() => {
+				db.run(`UPDATE users SET email = ? WHERE id = ?`, [data.email, id], (err) => {
+					if (err) {
+						console.error('Error updating email:', err.message);
+						return reject(new Error('Failed to update email'));
+					} else {
+						console.log('Email updated successfully');
+					}
+					return resolve();
+				});
 			});
 		});
 	}
@@ -236,14 +243,17 @@ async function majAvatar(id, avatar) {
 	if (!user) {
 		throw new Error('User not found');
 	}
-	db.serialize(() => {
-		db.run(`UPDATE users SET avatar = ? WHERE id = ?`, [avatar, id], (err) => {
-			if (err) {
-				console.error('Error updating avatar:', err.message);
-				throw new Error('Failed to update avatar');
-			} else {
-				console.log('Avatar updated successfully');
-			}
+	return new Promise((resolve, reject) => {
+		db.serialize(() => {
+			db.run(`UPDATE users SET avatar = ? WHERE id = ?`, [avatar, id], (err) => {
+				if (err) {
+					console.error('Error updating avatar:', err.message);
+					return reject(new Error('Failed to update avatar'));
+				} else {
+					console.log('Avatar updated successfully');
+					return resolve();
+				}
+			});
 		});
 	});
 }
@@ -261,14 +271,17 @@ async function deleteUser(id) {
 	user.email = "";
 	user.activated = false;
 	user.password = "";
-	db.serialize(() => {
-		db.run(`DELETE FROM users WHERE id = ?`, [id], (err) => {
-			if (err) {
-				console.error('Error deleting user:', err.message);
-				throw new Error('Failed to delete user');
-			} else {
-				console.log('User deleted successfully');
-			}
+	return new Promise((resolve, reject) => {
+		db.serialize(() => {
+			db.run(`DELETE FROM users WHERE id = ?`, [id], (err) => {
+				if (err) {
+					console.error('Error deleting user:', err.message);
+					return reject(new Error('Failed to delete user'));
+				} else {
+					console.log('User deleted successfully');
+					return resolve();
+				}
+			});
 		});
 	});
 }
@@ -288,15 +301,47 @@ async function verifActivity(user) {
 
 async function updateActivity(user) {
 	const time = Date.now()
-	db.serialize(() => {
-		db.run(`UPDATE users SET last_activity = ? WHERE id = ?`, [time, user.id], (err) => {
-			if (err) {
-				throw new Error('Failed to update activity');
-			} else {
-				console.log('Activity updated successfully');
-			}
+	return new Promise((resolve, reject) => {
+		db.serialize(() => {
+			db.run(`UPDATE users SET last_activity = ? WHERE id = ?`, [time, user.id], (err) => {
+				if (err)
+					return reject(new Error('Failed to update activity'));
+				else {
+					console.log('Activity updated successfully');
+					return resolve();
+				}
+			});
 		});
 	});
+}
+
+async function addFriend(userId, friendUsername) {
+	const friend = await getUserByUsername(friendUsername);
+	if (!friend)
+		throw new Error('Friend user not found');
+	return new Promise((resolve, reject) => {
+	db.serialize(() => {
+		db.get(`SELECT friend_list FROM users WHERE id = ?`, [userId], (err, row) => {
+			if (err) {
+				console.error('Error fetching friend list:', err.message);
+				return reject(new Error('Failed to fetch friend list'));
+			}
+			let friends = JSON.parse(row.friend_list);
+			if (friends.includes(friend.username)) {
+				console.log('Friend already in friend list');
+				return reject(new Error('Friend already in friend list'));
+			}
+			friends.push(friend.username);
+			db.run(`UPDATE users SET friend_list = ? WHERE id = ?`, [JSON.stringify(friends), userId], (err) => {
+				if (err) {
+					console.error('Error updating friend list:', err.message);
+					return reject(new Error('Failed to update friend list'));
+				}
+			});
+			return resolve();
+		});
+	});
+});
 }
 
 // async function main(){
@@ -317,7 +362,8 @@ module.exports= {
 	majAvatar,
 	deleteUser,
 	verifActivity,
-	updateActivity
+	updateActivity,
+	addFriend
 };
 
 // main();
