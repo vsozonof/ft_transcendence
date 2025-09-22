@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 10:30:46 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 11:47:31 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,6 +255,10 @@ class gameRoom {
 		 	(err, rows) => {
 				if (err)
 					return (console.error("Error fetching user IDs: ", err));
+				
+				if (rows.length < 2) {
+					return ;
+				}
 
 				const player1_id = rows.find(r => r.username === p1_name).id;
 				const player2_id = rows.find(r => r.username === p2_name).id;
@@ -339,6 +343,7 @@ class gameRoom {
 
 			if (msg.username) {
 				player.name = msg.username;
+				console.log("Player username set to:", player.name);
 			}
 
 			if (!player.ready) {

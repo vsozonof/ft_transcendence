@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:15:27 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 11:58:32 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ import { 	createCanvas,
 			keyHandler, 
 			showWinScreen, showReadyScreen } from "./utils";
 
+import moulinetteImg from '../assets/moulinette.png';
+import guestImg from '../assets/pfp_placeholder.png';
 
 export function pongSessionHandler(lobbyKey, ws) {
 	
@@ -26,11 +28,11 @@ export function pongSessionHandler(lobbyKey, ws) {
 
 	if (lobbyKey.mode === 'local') {
 		lobbyKey.username2 = "Guest";
-		lobbyKey.avatar2 = "../assets/default.png";
+		lobbyKey.avatar2 = guestImg;
 	}
 	else if (lobbyKey.mode === 'ai') {
 		lobbyKey.username2 = "Moulinette";
-		lobbyKey.avatar2 = "../assets/moulinette.png";
+		lobbyKey.avatar2 = moulinetteImg;
 	}
 	
 	const latestState = {
