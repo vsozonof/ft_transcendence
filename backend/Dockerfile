@@ -1,14 +1,11 @@
-FROM node:20
+FROM node:18
 
 WORKDIR /app
 
-COPY package*.json ./
-
-RUN npm install --include=dev && npm install -g nodemon
-
 COPY . .
+
+RUN npm install --include=dev
 
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
-

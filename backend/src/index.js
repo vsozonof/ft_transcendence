@@ -4,7 +4,7 @@ const fastify = require('fastify')({
 	bodyLimit: 10 * 1024 * 1024
 });
 
-const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser, verifActivity, updateActivity } = require('./user.js');
+const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser, verifActivity, updateActivity, addFriend } = require('./user.js');
 
 const webSocketPlugin = require('@fastify/websocket')
 
@@ -407,7 +407,7 @@ fastify.post('/register', async (request, reply) => {
 		console.log('Username must be at least 3 characters long');
 		reply.code(401).send({ error: 'Username must be at least 3 characters long' });
 	}
-	else if (!mail.includes('@') || !mail.includes('.')) {
+	else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
 		console.log('Invalid email format');
 		reply.code(401).send({ error: 'Invalid email format' });
 	}
@@ -421,7 +421,6 @@ fastify.post('/register', async (request, reply) => {
 			reply.code(500).send({ error: err.message });
 		}
 	}
-
 })
 
 fastify.post('/login', async (request, reply) => {
@@ -633,6 +632,7 @@ fastify.post('/tfaLogin', async (request, reply) => {
 		});
 		if (isValid) {
 			console.log('2FA login successful for user:', user.username);
+			updateActivity(user);
 			reply.send({ message: '2FA login successful' });
 		} else {
 			reply.code(401).send({ error: 'Invalid 2FA key' });
@@ -737,6 +737,56 @@ fastify.post('/updateActivity', async (request, reply) => {
 		console.error('Error updating activity:', err);
 		reply.code(500).send({ error: 'Failed to update activity' });
 	}
+});
+
+fastify.post('/addfriend', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	const { friendName } = request.body;
+	if (!token)
+		return reply.code(401).send({ error: 'Token is required' });
+	const user = await getUserByUsername(fastify.jwt.verify(token).username);
+	if (!user)
+		return reply.code(404).send({ error: 'User not found' });
+	try {
+		await addFriend(user.id, friendName);
+		reply.send({ message: 'Friend added successfully' });
+	} catch (err) {
+		console.error('Error adding friend:', err);
+		reply.code(500).send({ error: 'Failed to add friend' });
+	}
+});
+
+fastify.get('/getFriends', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token)
+		return reply.code(401).send({ error: 'Token is required' });
+	const user = await getUserByUsername(fastify.jwt.verify(token).username);
+
+	let friends = [];
+	if (!user && !user.friend_list)
+		return reply.code(404).send({ error: 'User not found' });
+	try {
+		let friend;
+		let friends_list = [];
+		friends_list = await JSON.parse(user.friend_list);
+		for (let i = 0; i < friends_list.length; i++) {
+			friend = await getUserByUsername(friends_list[i]);
+			if (friend)
+			{
+				const time = Date.now()
+				console.log('Friend found:', friend.username);
+				friend.isOnline = time - lastActivity <= 5 * 60 * 1000 ? true : false;
+				friends.push(friend);
+			}
+			else
+				console.error('Friend not found:', friends_list[i]);
+		}
+	}
+	catch (err) {
+		console.error('Error fetching friends:', err);
+		return reply.code(500).send({ error: 'Failed to fetch friends' });
+	}
+	reply.send(friends);
 });
 
 fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
