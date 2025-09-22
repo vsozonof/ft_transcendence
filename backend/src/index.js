@@ -25,51 +25,9 @@ const tournaments = new Map();
 
 fastify.register(webSocketPlugin);
 // ! -------------------
-// ? Fix the trade of usernames and avatars between players for multiplayer games
-// ? Fix player name on end screen
-// ? Fix avatar and name on header
-// ? Fix exiting queue and sending back to main menu on error or timeout
-// ? Add a spinner for queue waiting
-// ? DONE Do tournament logic
-// ? DONE: Design tournament UI
-// ? DONE: start first round of games
-// ? DONE: update bracket after round 1
-// ? DONE: return button
-// ? DONE: start semi finals
-// ? DONE: send back to tournament page after game
-// ? DONE: Display the winner
-// ? DONE: Give 10s before starting 1st round of tournament
-// ? DONE: Same for finals (so ppl can actually see the bracket)
-// ? DONE: Client will force-ready after 20s if not ready yet
-
-
-// ? DONE: Do GAME profile page
-// ? DONE: Design the page
-// ? DONE: Fetch stats from backend
-// ? DONE: Display stats
-// ? DONE: Add canvas for graphs
-// ? DONE: Back to main menu button in game profile page
-// ? DONE: Write game results to db
-// ? DONE: match history
-// ? DONE: meme img when stats non clicked
-
-// ? DONE: fix header and end screen missmatch:
-// ? DONE: side 1 on header is shown on the left but should be on the right.
-// ? DONE: both users are declared winner on end screen
-
-// TODO: Invesitage this error:
-// tournament.ts:40 Failed to parse WS message: SyntaxError: Unexpected token 'o', "[object Blob]" is not valid JSON
-// at JSON.parse (<anonymous>)
-// at ws_tournament.onmessage (tournament.ts:38:17)z
-// TODO: 
-
-// TODO: Dockerize the app
-
 
 // ! fix at the end :
-// ! why cant i change avatar?
 // ! investigate why back and forward arrows in browser cause issues
-// ! check if disconnecting during tournament is handled properly and does not block
 // ! gg its over
 
 let waitingPlayer = null; 
@@ -92,6 +50,11 @@ fastify.post("/api/queue", async (request, reply) => {
 
 		if (!["pvp", "tournament"].includes(mode))
 			return reply.send({ error: "Invalid game mode" });
+
+		if (mode === "pvp" && waitingPlayer?.user?.id === user.id)
+			return reply.send({ error: "Already in queue" });
+		if (mode === "tournament" && tournamentQueue.some(p => p.user.id === user.id))
+			return reply.send({ error: "Already in queue" });
 
 		if (["pvp"].includes(mode)) {
 			if (!waitingPlayer) {
@@ -278,6 +241,13 @@ fastify.get("/ws/tournament", { websocket: true}, (conn) => {
 
 
 	conn.on("close", () => {
+		console.log("Someone left the tournament ws");
+		if (joinedTournament) {
+		    joinedTournament.broadcastResults(JSON.stringify({ type: 'tournament_aborted' }));
+			joinedTournament.abort();
+			tournaments.delete(joinedTournament.id);
+			joinedTournament = null;
+		}
 	});
 });
 })

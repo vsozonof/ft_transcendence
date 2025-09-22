@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 10:58:29 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 12:04:20 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 13:13:48 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,11 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 					pongSessionHandler(roomKey, ws_game);
 			};
 			
-			ws_game.onclose = () => console.log("WS Game closed");
+			ws_game.onclose = () => {
+				console.log("WS Game closed");
+				ws_game.send(JSON.stringify({ type: 'ready', side: roomKey.player }) );
+			};
+			
 			ws_game.onerror = (e) => console.log("WS Game error " + e);
 		}
 		else if (tData.type === "show_bracket") {
@@ -123,6 +127,19 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 			winBlock.wrapper.classList.add("bg-green-200");
 			loser.wrapper.classList.add("bg-red-200");
 			loser.span.classList.add("line-through");
+		}
+		else if (tData.type === "tournament_aborted") {
+			alert("Tournament aborted due to a player disconnecting.");
+			
+			if (ws_tournament.readyState === WebSocket.OPEN)
+				ws_tournament.close();
+
+			const background = getBackground();
+
+			background.replaceChildren();
+
+			launchApp();
+			return;
 		}
 
 	};

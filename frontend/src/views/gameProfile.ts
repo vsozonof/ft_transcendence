@@ -6,12 +6,13 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/18 15:05:09 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 11:05:42 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 14:21:10 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getBackground } from "../main";
 import { launchApp } from "../main";
+import imgPfp from '../assets/pic.jpg';
 
 import { Chart, ArcElement, Tooltip, Legend, PieController } from 'chart.js';
 Chart.register(ArcElement, Tooltip, Legend, PieController);
@@ -63,7 +64,7 @@ export async function gameProfile(){
 	`;
 	contentArea.textContent = '';
 	const img = document.createElement("img");
-	img.src = "/assets/pic.jpg";
+	img.src = imgPfp;
 	img.className = "col-span-3 mx-auto mt-10 opacity-50 max-w-[300px] max-h-[300px]";
 	contentArea.appendChild(img);
 

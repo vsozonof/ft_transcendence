@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/05 19:25:37 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/10 17:02:54 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 13:36:52 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ interface MainMenuCallbacks {
 	onOnlinePlay: () => void;
 	onTournament: () => void;
 	onProfile: () => void;
-	onRankings: () => void;
 	onFriends: () => void;
 	onLogout: () => void;
 }
@@ -72,13 +71,6 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	hover:bg-blue-700 transition-colors
 	`;
 
-	const rankingsButton = document.createElement('button');
-	rankingsButton.textContent = 'Rankings';
-	rankingsButton.className = `
-	bg-blue-600 text-white rounded-md py-2 w-full font-semibold
-	hover:bg-blue-700 transition-colors
-	`;
-
 	const profileButton = document.createElement('button');
 	profileButton.textContent = 'Profile';
 	profileButton.className = `
@@ -108,7 +100,6 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	mainMenu.appendChild(playOnlineButton);
 	mainMenu.appendChild(playTournamentButton);
 	mainMenu.appendChild(profileButton);
-	mainMenu.appendChild(rankingsButton);
 	mainMenu.appendChild(friendsButton);
 	mainMenu.appendChild(logOut);
 
@@ -119,7 +110,6 @@ export function createMainMenu(callbacks: MainMenuCallbacks): HTMLElement {
 	playOnlineButton.onclick = callbacks.onOnlinePlay;
 	playTournamentButton.onclick = callbacks.onTournament;
 	profileButton.onclick = callbacks.onProfile;
-	rankingsButton.onclick = callbacks.onRankings;
 	friendsButton.onclick = callbacks.onFriends;
 	logOut.onclick = callbacks.onLogout;
 

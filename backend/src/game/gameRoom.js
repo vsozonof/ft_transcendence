@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 11:47:31 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 12:55:07 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -339,6 +339,8 @@ class gameRoom {
 	
 	handleMessage(socket, msg) {
 		if (msg.type === "ready") {
+			console.log("Received ready from player");
+			
 			const player = this.players.find(p => p.socket === socket);
 
 			if (msg.username) {

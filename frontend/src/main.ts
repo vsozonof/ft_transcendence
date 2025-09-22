@@ -1,10 +1,19 @@
-import { loginHandler } from "./views/login";
-import { profileHandler } from "./views/profil";
-import { createMainMenu } from "./views/mainMenu";
-import { friendsHandler } from "./views/friends";
-import { matchHandler } from "./game/matchHandler";
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.ts                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/09/22 13:55:24 by vsozonof          #+#    #+#             */
+/*   Updated: 2025/09/22 14:12:17 by vsozonof         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-import { gameProfile } from "./views/gameProfile";
+
+import { initHistory, navigate } from './historyManager';
+import { loginHandler } from './views/login';
+
 
 const app = document.getElementById('app');
 
@@ -31,51 +40,61 @@ function setupBackground() {
 export async function launchApp() {
 	if (!app)
 		return;
-	console.log('Launching app...');
+
 	setupBackground();
 	const background = getBackground();
-	if (!localStorage.getItem('token')) {
+	console.log('Launching app...');
+	if (!localStorage.getItem('token'))
 		await loginHandler();
-	}
-
-	const mainMenu = createMainMenu({
-		onPlay: () => {
-    		mainMenu.remove();
-			matchHandler('ai');
-  		},
-		onLocalPlay: () => {
-			mainMenu.remove();
-			matchHandler('local');
-		},
-		onOnlinePlay: () => {
-			mainMenu.remove();
-			matchHandler('pvp');
-		},
-		onTournament: () => {
-			mainMenu.remove();
-			matchHandler('tournament');
-		},
-		onProfile: () => {
-			mainMenu.remove();
-			profileHandler();
-		},
-		onRankings: () => {
-			mainMenu.remove();
-			gameProfile();
-		},
-		onFriends: () => {
-			mainMenu.remove();
-			friendsHandler();
-		},
-		onLogout: () => {
-			localStorage.removeItem('token');
-			location.reload();
-		},
-	});
-
-	background.appendChild(mainMenu);
-
+	console.log('User logged in');
+	initHistory();
+	navigate('main');
 }
+
+// export async function launchApp() {
+// 	if (!app)
+// 		return;
+// 	console.log('Launching app...');
+// 	setupBackground();
+// 	const background = getBackground();
+// 	if (!localStorage.getItem('token')) {
+// 		await loginHandler();
+// 	}
+
+// 	const mainMenu = createMainMenu({
+// 		onPlay: () => {
+//     		mainMenu.remove();
+// 			matchHandler('ai');
+//   		},
+// 		onLocalPlay: () => {
+// 			mainMenu.remove();
+// 			matchHandler('local');
+// 		},
+// 		onOnlinePlay: () => {
+// 			mainMenu.remove();
+// 			matchHandler('pvp');
+// 		},
+// 		onTournament: () => {
+// 			mainMenu.remove();
+// 			matchHandler('tournament');
+// 		},
+// 		onProfile: () => {
+// 			mainMenu.remove();
+// 			profileHandler();
+// 		},
+// 		onFriends: () => {
+// 			mainMenu.remove();
+// 			friendsHandler();
+// 		},
+// 		onLogout: () => {
+// 			localStorage.removeItem('token');
+// 			location.reload();
+// 		},
+// 	});
+
+// 	background.appendChild(mainMenu);
+
+// }
 
 
 document.addEventListener('DOMContentLoaded', () => {

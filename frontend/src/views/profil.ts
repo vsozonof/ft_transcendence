@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/22 11:03:17 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 13:37:25 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@ import { getBackground, launchApp } from "../main"
 import { enable2faHandler } from "./enable2fa"
 
 import { tfa_disHandler } from "./2fadisable";
+
+import { gameProfile } from "./gameProfile";
+
 
 import { loginHandler } from "./login";
 
@@ -543,6 +546,11 @@ export async function profileHandler(): Promise<void> {
 		bg-green-600 text-white rounded-md py-2 w-full font-semibold
 		hover:bg-green-700 transition-colors mt-6
 	`;
+
+	gameProfileBtn.onclick = async () => {
+		background.removeChild(wrapper);
+		gameProfile();
+	}
 	
 	backBox.appendChild(gameProfileBtn);
 	backBox.appendChild(backBtn);

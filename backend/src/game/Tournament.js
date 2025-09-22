@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 09:27:42 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 11:25:45 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 13:30:15 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,20 +18,27 @@ class Tournament {
 		this.players = players;
 		this.semiWinners = [null, null];
 		this.winner = null;
+		this.timeouts = [];
+	}
 
+	abort() {
+		this.aborted = true;
+		this.timeouts.forEach(t => clearTimeout(t));
+		this.timeouts = [];
+		this.players.forEach(p => p.socket = null);
 	}
 
 	startRound1() {
 		const m1 = rooms.create("tournament", [this.players[0], this.players[1]]);
 		const m2 = rooms.create("tournament", [this.players[2], this.players[3]]);
 
-		setTimeout(() => {
+		this.timeouts.push(setTimeout(() => {
 			this.players[0].socket.send(JSON.stringify({ type: "start_match", game: "r1g1", roomId: m1.id, side: 0, opponent: 1 }));
 			this.players[1].socket.send(JSON.stringify({ type: "start_match", game: "r1g1", roomId: m1.id, side: 1, opponent: 0 }));
 
 			this.players[2].socket.send(JSON.stringify({ type: "start_match", game: "r1g2", roomId: m2.id, side: 0, opponent: 3 }));
 			this.players[3].socket.send(JSON.stringify({ type: "start_match", game: "r1g2", roomId: m2.id, side: 1, opponent: 2 }));
-		}, 10 * 1000);		
+		}, 10 * 1000));		
 	}
 
 	handleMatchResult(game, winner) {
@@ -81,7 +88,7 @@ class Tournament {
 	startRound2() {
 		const m3 = rooms.create("tournament", [this.semiWinners[0], this.semiWinners[1]]);
 		
-		setTimeout(() => {
+		this.timeouts.push(setTimeout(() => {
 			this.semiWinners[0].socket.send(JSON.stringify({
 				type: "start_match", 
 				game: "final", 
@@ -97,7 +104,7 @@ class Tournament {
 				side: 1, 
 				opponent: this.semiWinners[0].id 
 			}));
-		}, 10 * 1000);		
+		}, 10 * 1000));		
 		
 	}
 
