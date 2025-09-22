@@ -194,50 +194,6 @@ async function disable2fa(user, key) {
 	}
 }
 
-async function updateUser(id, data) {
-	const user = await getUserById(id);
-	if (!user) {
-		throw new Error('User not found');
-	}
-	const usernameExists = await getUserByUsername(data.username);
-	if (usernameExists && usernameExists.id !== user.id) {
-		throw new Error('Username already exists');
-	}
-	if (data.username && data.username !== user.username) {
-		return new Promise((resolve, reject) => {
-			db.serialize(() => {
-				db.run(`UPDATE users SET username = ? WHERE id = ?`, [data.username, id], (err) => {
-					if (err) {
-						console.error('Error updating username:', err.message);
-						reject(new Error('Failed to update username and email'));
-					} else {
-						console.log('Username updated successfully');
-					}
-				});
-			});
-		});
-	}
-	if (data.email) {
-		if (!data.email.includes('@') || !data.email.includes('.')) {
-			console.log('Invalid email format');
-			throw new Error('Invalid email format');
-		}
-		return new Promise((resolve, reject) => {
-			db.serialize(() => {
-				db.run(`UPDATE users SET email = ? WHERE id = ?`, [data.email, id], (err) => {
-					if (err) {
-						console.error('Error updating email:', err.message);
-						return reject(new Error('Failed to update email'));
-					} else {
-						console.log('Email updated successfully');
-					}
-					return resolve();
-				});
-			});
-		});
-	}
-}
-
 async function majAvatar(id, avatar) {
 	const user = await getUserById(id);
 	if (!user) {
@@ -286,11 +242,56 @@ async function deleteUser(id) {
 	});
 }
 
+async function updateUser(id, data) {
+	const user = await getUserById(id);
+	if (!user) {
+		throw new Error('User not found');
+	}
+	const usernameExists = await getUserByUsername(data.username);
+	if (usernameExists && usernameExists.id !== user.id) {
+		throw new Error('Username already exists');
+	}
+	if (data.username && data.username !== user.username) {
+		return new Promise((resolve, reject) => {
+			db.serialize(() => {
+				db.run(`UPDATE users SET username = ? WHERE id = ?`, [data.username, id], (err) => {
+					if (err) {
+						console.error('Error updating username:', err.message);
+						reject(new Error('Failed to update username and email'));
+					} else {
+						console.log('Username updated successfully');
+						resolve();
+					}
+				});
+			});
+		});
+	}
+	if (data.email) {
+		if (!data.email.includes('@') || !data.email.includes('.')) {
+			console.log('Invalid email format');
+			throw new Error('Invalid email format');
+		}
+		return new Promise((resolve, reject) => {
+			db.serialize(() => {
+				db.run(`UPDATE users SET email = ? WHERE id = ?`, [data.email, id], (err) => {
+					if (err) {
+						console.error('Error updating email:', err.message);
+						return reject(new Error('Failed to update email'));
+					} else {
+						console.log('Email updated successfully');
+					}
+					return resolve();
+				});
+			});
+		});
+	}
+}
+
 async function verifActivity(user) {
 	console.log('Verifying activity for user:', user.username);
 	const time = Date.now()
 	lastActivity = user.last_activity;
-	if (lastActivity && time - lastActivity > 30 * 60 * 1000) { // 30 minutes
+	if (lastActivity && time - lastActivity > 30 * 60 * 30000) { // 30 minutes
 		console.log('User has been inactive for more than 5 minutes : ');
 		fastifyJwt
 		return false;
@@ -305,10 +306,10 @@ async function updateActivity(user) {
 		db.serialize(() => {
 			db.run(`UPDATE users SET last_activity = ? WHERE id = ?`, [time, user.id], (err) => {
 				if (err)
-					return reject(new Error('Failed to update activity'));
+					reject(new Error('Failed to update activity'));
 				else {
 					console.log('Activity updated successfully');
-					return resolve();
+					resolve();
 				}
 			});
 		});
@@ -324,18 +325,18 @@ async function addFriend(userId, friendUsername) {
 		db.get(`SELECT friend_list FROM users WHERE id = ?`, [userId], (err, row) => {
 			if (err) {
 				console.error('Error fetching friend list:', err.message);
-				return reject(new Error('Failed to fetch friend list'));
+				reject(new Error('Failed to fetch friend list'));
 			}
 			let friends = JSON.parse(row.friend_list);
-			if (friends.includes(friend.username)) {
+			if (friends.includes(friend.id)) {
 				console.log('Friend already in friend list');
-				return reject(new Error('Friend already in friend list'));
+				reject(new Error('Friend already in friend list'));
 			}
-			friends.push(friend.username);
+			friends.push(friend.id);
 			db.run(`UPDATE users SET friend_list = ? WHERE id = ?`, [JSON.stringify(friends), userId], (err) => {
 				if (err) {
 					console.error('Error updating friend list:', err.message);
-					return reject(new Error('Failed to update friend list'));
+					reject(new Error('Failed to update friend list'));
 				}
 			});
 			return resolve();
@@ -363,7 +364,8 @@ module.exports= {
 	deleteUser,
 	verifActivity,
 	updateActivity,
-	addFriend
+	addFriend,
+	getUserById
 };
 
 // main();
