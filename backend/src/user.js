@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   user.js                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ertupop <ertupop@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 12:31:31 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/21 15:57:35 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/22 07:04:09 by ertupop          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,7 +290,7 @@ async function verifActivity(user) {
 	console.log('Verifying activity for user:', user.username);
 	const time = Date.now()
 	lastActivity = user.last_activity;
-	if (lastActivity && time - lastActivity > 5 * 60 * 1000) { // 5 minutes
+	if (lastActivity && time - lastActivity > 30 * 60 * 1000) { // 30 minutes
 		console.log('User has been inactive for more than 5 minutes : ');
 		fastifyJwt
 		return false;

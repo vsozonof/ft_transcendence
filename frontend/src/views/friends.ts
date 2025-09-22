@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 11:01:05 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/22 09:19:02 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 11:17:43 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ export async function friendsHandler(): Promise<void> {
 			}
 		});
 		if (!res.ok) {
+			overlay.classList.add('hidden');
 			localStorage.removeItem('token');
 			background.removeChild(wrapper);
 			launchApp();
