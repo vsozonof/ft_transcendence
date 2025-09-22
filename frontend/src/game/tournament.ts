@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 10:58:29 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/15 12:49:45 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:15:33 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,8 +68,6 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 					console.error("Failed to parse WS message:", e);
 					return;
 				}
-
-				console.log("Received WS message:", gData);
 
 				if (gData.type === "lobby_joined")
 					pongSessionHandler(roomKey, ws_game);

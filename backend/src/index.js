@@ -57,10 +57,17 @@ fastify.register(webSocketPlugin);
 // ? DONE: side 1 on header is shown on the left but should be on the right.
 // ? DONE: both users are declared winner on end screen
 
+// TODO: Invesitage this error:
+// tournament.ts:40 Failed to parse WS message: SyntaxError: Unexpected token 'o', "[object Blob]" is not valid JSON
+// at JSON.parse (<anonymous>)
+// at ws_tournament.onmessage (tournament.ts:38:17)z
+// TODO: 
+
 // TODO: Dockerize the app
 
 
 // ! fix at the end :
+// ! why cant i change avatar?
 // ! investigate why back and forward arrows in browser cause issues
 // ! check if disconnecting during tournament is handled properly and does not block
 // ! gg its over
@@ -88,9 +95,7 @@ fastify.post("/queue", async (request, reply) => {
 
 		if (["pvp"].includes(mode)) {
 			if (!waitingPlayer) {
-				console.log("Player added to waiting queue");
 				const timeout = setTimeout(() => { 
-					console.log("Queue timeout, no match found");
 					reply.send({ error: "timeout" });
 					waitingPlayer = null;
 					resolve();
@@ -99,14 +104,12 @@ fastify.post("/queue", async (request, reply) => {
 				waitingPlayer = { reply, timeout, resolve, user };
 
 				reply.raw.on("close", () => {
-					console.log("Client left the queue before match/timeout");
 					clearTimeout(timeout);
 					waitingPlayer = null;
 					resolve();
 				});
 
 			} else {
-				console.log("Match found, creating room");
 				const room = rooms.create("pvp");
 				clearTimeout(waitingPlayer.timeout);
 
@@ -130,9 +133,7 @@ fastify.post("/queue", async (request, reply) => {
 		}
 		else if (["tournament"].includes(mode)) {
 			if (tournamentQueue.length < 3) {
-				console.log("Player added to waiting queue");
 				const timeoutTournament = setTimeout(() => { 
-					console.log("Queue timeout, no match found");
 					reply.send({ error: "timeout" });
 					tournamentQueue = tournamentQueue.filter(p => p.reply !== reply);
 					resolve();
@@ -141,14 +142,12 @@ fastify.post("/queue", async (request, reply) => {
 				tournamentQueue.push({ reply, timeoutTournament, resolve, user });
 
 				reply.raw.on("close", () => {
-					console.log("Client left the queue before match/timeout");
 					clearTimeout(timeoutTournament);
 					tournamentQueue = tournamentQueue.filter(p => p.reply !== reply);
 					resolve();
 				});
 
 			} else {
-				console.log("4 players found, creating tournament");
 				
 				tournamentQueue.push({ reply, timeoutTournament: null, resolve, user });
 				tournamentQueue.forEach(p => clearTimeout(p.timeoutTournament));
@@ -186,7 +185,7 @@ fastify.post("/rooms", async (request, reply) => {
 		return reply.code(400).send({ error: "Invalid game mode" });
 
 	const room = rooms.create(mode);
-	console.log(`Room created: ${room.id} (mode: ${room.mode})`);
+	(`Room created: ${room.id} (mode: ${room.mode})`);
   	return reply.send({ roomId: room.id, mode: room.mode });
 });
 
@@ -228,7 +227,6 @@ fastify.get("/game", { websocket: true}, (conn) => {
 
 
 	conn.on("close", () => {
-		console.log("WS connection closed");
 		if (joinedRoom)
 			joinedRoom.leave(conn.socket);
 	});
@@ -268,7 +266,6 @@ fastify.get("/tournament", { websocket: true}, (conn) => {
 			}));
 
 			if (tournament.allPlayersJoined()) {
-				console.log("All players joined, starting tournament");
 				tournament.broadcastResults();
 				tournament.startRound1();
 			}
@@ -288,7 +285,6 @@ fastify.get("/tournament", { websocket: true}, (conn) => {
 
 fastify.get('/matches/:id', async (request, reply) => {
 	const { id } = request.params;
-	console.log('Received request for matches of user ID:', id);
 	try {
 		const rows = await new Promise((resolve, reject) => {
 			db.all(`
@@ -322,7 +318,6 @@ fastify.get('/matches/:id', async (request, reply) => {
 
 fastify.get('/stats/:username', async (request, reply) => {
 	const { username } = request.params;
-	console.log('Received request for stats of username:', username);
 	return new Promise((resolve, reject) => {
 		db.get(
 			`SELECT
@@ -394,7 +389,6 @@ fastify.get('/api/db', async (request, reply) => {
 fastify.post('/register', async (request, reply) => {
 	const { mail, username,  password, verifPassword } = request.body;
 
-	console.log(' received data:', { username, mail, password, verifPassword});
 	if (password !== verifPassword) {
 		console.log('Passwords do not match');
 		reply.code(401).send({ error: 'Passwords do not match' });
@@ -795,7 +789,7 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
 		process.exit(1);
 	}
 	else {
-		console.log('SERVER LANCE');
+		console.log('Backend started on port 3000');
 	}
 });
 

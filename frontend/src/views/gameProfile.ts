@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/18 15:05:09 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 03:54:49 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:16:10 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,6 @@ export async function gameProfile(){
 
 		try {
 			const username = localStorage.getItem('username');
-			console.log('Fetching stats for username:', username);
 			const res = await fetch(`http://localhost:3000/stats/${username}`, {
 				method: 'GET',
 				headers: {
@@ -182,7 +181,6 @@ export async function gameProfile(){
 
 		try {
 			const username = localStorage.getItem('username');
-			console.log('Fetching stats for username:', username);
 			const res = await fetch(`http://localhost:3000/stats/${username}`, {
 				method: 'GET',
 				headers: {
@@ -198,15 +196,12 @@ export async function gameProfile(){
 
 			const userId = data.stats.id;
 
-			console.log('Fetching match history for user ID:', userId);
-
 			const matchesRes = await fetch(`http://localhost:3000/matches/${userId}`, {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${localStorage.getItem('token')}`
 				}
 			});
-			console.log('Match history data: ewf09axweh0fweh');
 
 			const { matches } = await matchesRes.json();
 
@@ -218,8 +213,6 @@ export async function gameProfile(){
 
 			contentArea.innerHTML = "";
 
-			console.log("Match informations:", matches.length);
-
 			matches.forEach(match => {
 				const isWinner = (match.winner === userId);
 				let winnerName;
@@ -229,8 +222,6 @@ export async function gameProfile(){
 				else if (match.winner === match.player2_id)
 					winnerName = match.player2_name;
 				
-				console.log("Informations: ", match.player1_name, match.player2_name, match.score1, match.score2, match.winner);
-
 				const card = document.createElement("div");
 				card.className = `
 					p-3 rounded-md mb-3 text-white

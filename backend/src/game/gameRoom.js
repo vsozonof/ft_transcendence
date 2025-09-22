@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 02:38:44 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:14:02 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,8 +178,6 @@ class gameRoom {
 		const p2_name = this.players[1].name;
 		let winner;
 
-		console.log("Game over: ", p1_name, " ", p1_score, " - ", p2_score, " ", p2_name);
-
 		if (mode === "local")
 			return ;
 
@@ -217,7 +215,7 @@ class gameRoom {
 			
 			db.run(query, [p1_score, p2_score, p1_name], (err) => {
 				if (err)
-					console.log ("Error: ", err);
+					console.error ("Error: ", err);
 				else
 					console.log("Updated score of ", p1_name, " score: ", p1_score, p2_score);
 			});
@@ -241,7 +239,7 @@ class gameRoom {
 					
 				db.run(query, [scored, conceded, name], (err) => {
 					if (err)
-						console.log ("Error: ", err);
+						console.error ("Error: ", err);
 					else
 						console.log("Updated score of ", name, " score: ", scored, conceded);
 				});		
@@ -255,13 +253,12 @@ class gameRoom {
 			[p1_name, p2_name],
 		 	(err, rows) => {
 				if (err)
-					return (console.log("Error fetching user IDs: ", err));
+					return (console.error("Error fetching user IDs: ", err));
 
 				const player1_id = rows.find(r => r.username === p1_name).id;
 				const player2_id = rows.find(r => r.username === p2_name).id;
 		
 				if (!player1_id || !player2_id) {
-					console.log("Could not find user IDs for players");
 					return ;
 				}
 
@@ -281,7 +278,7 @@ class gameRoom {
 
 				db.run(query, [mode, p1_name, p2_name, player1_id, player2_id, p1_score, p2_score, winner], (err) => {
 					if (err)
-						console.log ("Error: ", err);
+						console.error ("Error: ", err);
 					else
 						console.log("Inserted match record for ", p1_name, " vs ", p2_name);
 				});
@@ -340,7 +337,6 @@ class gameRoom {
 			const player = this.players.find(p => p.socket === socket);
 
 			if (msg.username) {
-				console.log("Player", player.side, " is named ", msg.username);
 				player.name = msg.username;
 			}
 

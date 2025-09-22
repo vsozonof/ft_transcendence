@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:03:12 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:15:47 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,6 @@ function checkKeyPresses(keysPressed, ws: WebSocket, mode: string, player: numbe
 
 function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | "ai" | "tournament", ws: WebSocket, side: number, lobbyKey): Promise<void> {
   return new Promise((resolve) => {
-	console.log("Showing ready screen for mode:", mode, "side:", side);
     const readyWrapper = document.createElement('div');
     readyWrapper.className = `
       absolute top-1/2 left-1/2 
@@ -326,7 +325,6 @@ async function updateUserInfos() {
 			localStorage.setItem('username', data.username);
 			localStorage.setItem('email', data.email);
 			localStorage.setItem('avatar', data.avatar);
-			console.log(localStorage.getItem('avatar'));
 		}
 }
 

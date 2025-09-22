@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:06:58 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:15:27 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,15 +46,13 @@ export function pongSessionHandler(lobbyKey, ws) {
 
 	async function start() {
 		renderer.setupCanvas();
-		console.log("PLyaer = ", lobbyKey.player);
 		renderer.setupHeader(lobbyKey.mode, lobbyKey.username1, lobbyKey.avatar1, lobbyKey.username2, lobbyKey.avatar2, lobbyKey.player);
 		await showReadyScreen(renderer.returnCtx(), lobbyKey.mode, ws, lobbyKey.player, lobbyKey);
 		gameLoop();
 	}
 
-	ws.onmessage = (message) => {
+	ws.onmessage = (message: any) => {
 		const data = JSON.parse(message.data);
-		console.log("Received WS message:", data);
 		if (data.type === 'game_state') {
 			latestState.p1y = data.p1y;
 			latestState.p2y = data.p2y;
@@ -150,7 +148,6 @@ export function createPongRenderer() {
 	// ? -> This function is called in the update() loop to refresh the game state
 	function draw() {
 		state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
-		console.log("Drawing frame, countdown:", state.countDown);
 		
 		drawScore(state.ctx, state.score1, state.score2);
 		state.paddles.p1.draw();

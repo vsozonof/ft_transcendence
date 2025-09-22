@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:49:09 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/06 03:18:31 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:13:01 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ function decideAction(ball, paddle2) {
 	}
 
 	if (gameData.ballVx > 0) {
-		console.log('Ball is moving towards paddle2');
 		return calculateBallTrajectory(gameData);
 	}
 	else if (gameData.ballVx < 0)
