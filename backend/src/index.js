@@ -767,7 +767,7 @@ fastify.get('/api/getFriends', async (request, reply) => {
 			if (friend)
 			{
 				const time = Date.now()
-				friend.isOnline = time - lastActivity <= 5 * 60 * 1000 ? true : false;
+				friend.isOnline = time - lastActivity <= 1 * 60 * 1000 ? true : false;
 				friends.push(friend);
 			}
 			else

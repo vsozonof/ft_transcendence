@@ -291,7 +291,7 @@ async function verifActivity(user) {
 	console.log('Verifying activity for user:', user.username);
 	const time = Date.now()
 	lastActivity = user.last_activity;
-	if (lastActivity && time - lastActivity > 30 * 60 * 30000) { // 30 minutes
+	if (lastActivity && time - lastActivity > 20 * 60 * 1000) { // 30 minutes
 		console.log('User has been inactive for more than 5 minutes : ');
 		fastifyJwt
 		return false;
