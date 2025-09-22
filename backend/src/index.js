@@ -51,10 +51,12 @@ fastify.post("/api/queue", async (request, reply) => {
 		if (!["pvp", "tournament"].includes(mode))
 			return reply.send({ error: "Invalid game mode" });
 
-		if (mode === "pvp" && waitingPlayer?.user?.id === user.id)
+		if (
+			(waitingPlayer?.user?.id === user.id) || 
+				tournamentQueue.some(p => p.user.id === user.id)
+			) {
 			return reply.send({ error: "Already in queue" });
-		if (mode === "tournament" && tournamentQueue.some(p => p.user.id === user.id))
-			return reply.send({ error: "Already in queue" });
+		}
 
 		if (["pvp"].includes(mode)) {
 			if (!waitingPlayer) {
@@ -241,7 +243,6 @@ fastify.get("/ws/tournament", { websocket: true}, (conn) => {
 
 
 	conn.on("close", () => {
-		console.log("Someone left the tournament ws");
 		if (joinedTournament) {
 		    joinedTournament.broadcastResults(JSON.stringify({ type: 'tournament_aborted' }));
 			joinedTournament.abort();

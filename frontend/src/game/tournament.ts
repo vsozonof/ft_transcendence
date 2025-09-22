@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 10:58:29 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 13:13:48 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 14:39:25 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 		try {
 			tData = JSON.parse(msg.data);
 		} catch (e) {
-			console.log("D");
 			console.error("Failed to parse WS message:", e, " data was:", msg.data);
 			return;
 		}
@@ -70,7 +69,6 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 				try {
 					gData = JSON.parse(msg.data);
 				} catch (e) {
-					console.log("E");
 					console.error("Failed to parse WS message:", e);
 					return;
 				}

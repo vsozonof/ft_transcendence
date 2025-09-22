@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 12:55:07 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 14:39:03 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,7 +217,7 @@ class gameRoom {
 				if (err)
 					console.error ("Error: ", err);
 				else
-					console.log("Updated score of ", p1_name, " score: ", p1_score, p2_score);
+					console.log("Score updated");
 			});
 			
 			return ;
@@ -241,12 +241,11 @@ class gameRoom {
 					if (err)
 						console.error ("Error: ", err);
 					else
-						console.log("Updated score of ", name, " score: ", scored, conceded);
+						console.log("Added to history ");
 				});		
 			}
 		}
 
-		console.log("Recording match:", p1_name, "vs", p2_name);
 		db.all(
 			`SELECT id, username
 			FROM users

@@ -50,7 +50,6 @@ function decideAction(ball, paddle2, ctx) {
 	}
 
 	if (gameData.ballVx > 0) {
-		console.log('Ball is moving towards paddle2');
 		return calculateBallTrajectory(gameData);
 	}
 	else if (gameData.ballVx < 0)

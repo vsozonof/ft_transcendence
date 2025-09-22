@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/30 20:26:41 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 10:42:43 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 14:41:51 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,6 @@ async function queueForTournament(mode: string) {
 			try {
 				data = JSON.parse(msg.data);
 			} catch (e) {
-				console.log("A");
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
@@ -145,7 +144,6 @@ async function queueForPvp(mode: string) {
 			try {
 				data = JSON.parse(msg.data);
 			} catch (e) {
-				console.log("B");
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
@@ -228,7 +226,6 @@ async function createAndJoinAiOrLocalRoom(mode: string) {
 			try {
 				data = JSON.parse(msg.data);
 			} catch (e) {
-				console.log("C");
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
