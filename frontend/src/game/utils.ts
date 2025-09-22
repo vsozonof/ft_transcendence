@@ -6,11 +6,13 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 09:18:30 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 12:03:43 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getBackground, launchApp } from "../main";
+import pfpPlaceholderImg from '../assets/pfp_placeholder.png';
+
 
 // ? _______________
 // ? createCanvas()
@@ -37,7 +39,7 @@ function createCanvas() {
 	const p1Img = document.createElement("img");
 	p1Img.className = "h-20 w-20 rounded-full object-cover bg-white/10";
 	p1Img.alt = "P1 avatar";
-	p1Img.src = "./assets/pfp_placeholder.png";
+	p1Img.src = pfpPlaceholderImg;
 	p1.append(p1Img, p1Name);
 
 	const p2 = document.createElement("div");
@@ -48,7 +50,7 @@ function createCanvas() {
 	const p2Img = document.createElement("img");
 	p2Img.className = "h-20 w-20 rounded-full object-cover bg-white/10";
 	p2Img.alt = "P2 avatar";
-	p2Img.src = "./assets/pfp_placeholder.png";
+	p2Img.src = pfpPlaceholderImg;
 	p2.append(p2Name, p2Img);
 	
 	const canvas = document.createElement("canvas");
@@ -173,10 +175,12 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | 
 		ws.send(JSON.stringify({ type: 'ready', side: side }) );
 	}
 
+	
     readyP1.onclick = () => {
-      readyP1.disabled = true;
-      readyP1.textContent = '✅';
-	  ws.send(JSON.stringify({ type: 'ready', side: side, username: lobbyKey.username1 }) );
+		readyP1.disabled = true;
+		readyP1.textContent = '✅';
+		console.log("usernames:", lobbyKey.username1, lobbyKey.username2);
+		ws.send(JSON.stringify({ type: 'ready', side: side, username: lobbyKey.username1 }) );
     };
 
     if (mode === 'local') {

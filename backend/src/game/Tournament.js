@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 09:27:42 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 10:55:01 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 11:25:45 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ class Tournament {
 		this.players.forEach(player => {
 			console.log("Message:", msg);
 			if (player.socket) {
-				player.socket.send(JSON.stringify(msg));
+				player.socket.send(msg);
 			}
 		});
 	}

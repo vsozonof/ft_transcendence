@@ -6,13 +6,15 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 10:58:29 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 10:52:00 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 12:04:20 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { launchApp } from "../main";
 import { getBackground } from "../main";
 import { pongSessionHandler } from "./pong";
+import pfpPlaceholderImg from '../assets/pfp_placeholder.png';
+
 
 function tournamentHandler(lobbyKey, ws_tournament) {
 	const tournament = createTournamentUI(lobbyKey);
@@ -54,7 +56,9 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 			roomKey.avatar1 = self.avatar;
 			roomKey.username2 = opponent.username;
 			roomKey.avatar2 = opponent.avatar;
-			
+
+			console.log("Players usernames:", roomKey.username1, roomKey.username2);
+
 			const ws_game = new WebSocket("wss://10.12.3.15:8443/ws/game");
 
 			ws_game.onopen = () => {
@@ -151,7 +155,7 @@ function createTournamentUI(lobbyKey) {
 
 		const img = document.createElement("img");
 		img.className = "w-8 h-8 rounded-full object-cover";
-		img.src = avatar || "./assets/pfp_placeholder.png";
+		img.src = avatar || pfpPlaceholderImg;
 		img.alt = `${name} avatar`;
 
 		const span = document.createElement("span");
