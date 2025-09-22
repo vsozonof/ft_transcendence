@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   friends.ts                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 11:01:05 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/21 15:45:53 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/22 09:19:02 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ export async function friendsHandler(): Promise<void> {
 		return;
 	}
 	else {
-		const res = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const res = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`
@@ -83,7 +83,7 @@ export async function friendsHandler(): Promise<void> {
 	btnnBox.appendChild(friend_BBtn);
 
 	friend_BBtn.addEventListener('click', async () => {
-		const res = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const res = await fetch('/api/verifActivity', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`
@@ -101,7 +101,7 @@ export async function friendsHandler(): Promise<void> {
 
 	friend_Btn.addEventListener('click', async () => {
 		const friendName = friendInput.value;
-		const act = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const act = await fetch('/api/verifActivity', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`
@@ -117,7 +117,7 @@ export async function friendsHandler(): Promise<void> {
 			errorMessageb.textContent = 'Please enter a username';
 			return;
 		}
-		const res = await fetch('http://127.0.0.1:3000/addfriend', {
+		const res = await fetch('/api/addfriend', {
 			method: 'POST',
 			headers: {
 				'Authorization': `Bearer ${token}`,
@@ -144,7 +144,7 @@ export async function friendsHandler(): Promise<void> {
 	async function loadFriends() {
 		friend_container.innerHTML = "";
 		try {
-			const res = await fetch("http://127.0.0.1:3000/getFriends", {
+			const res = await fetch("/api/getFriends", {
 				method: "GET",
 				headers: {
 					"Authorization": `Bearer ${token}`,
@@ -242,7 +242,7 @@ export async function friendsHandler(): Promise<void> {
 
 
 	addBtn.addEventListener('click', async () => {
-		const res = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const res = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`

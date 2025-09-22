@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/18 15:03:23 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 11:03:17 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ export async function profileHandler(): Promise<void> {
 		return;
 	}
 	else {
-		const res = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const res = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`
@@ -39,7 +39,7 @@ export async function profileHandler(): Promise<void> {
 			launchApp();
 			return;
 		}
-		const user = await fetch('http://127.0.0.1:3000/getUserByToken', {
+		const user = await fetch('/api/getUserByToken', {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ export async function profileHandler(): Promise<void> {
 
 	valBtn.addEventListener('click', async () => {
 		const inputValue = valInput.value;
-		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const activ = await fetch('/api/verifActivity', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`
@@ -112,7 +112,7 @@ export async function profileHandler(): Promise<void> {
 			launchApp();
 			return;
 		}
-		const is2fa = await fetch('http://127.0.0.1:3000/isit2fa', {
+		const is2fa = await fetch('/api/isit2fa', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`
@@ -121,7 +121,7 @@ export async function profileHandler(): Promise<void> {
 		if (is2fa.ok){
 			const data = await is2fa.json();
 			if (data.is2fa) {
-				const code = await fetch('http://127.0.0.1:3000/tfaLogin', {
+				const code = await fetch('/api/tfaLogin', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ export async function profileHandler(): Promise<void> {
 					body: JSON.stringify({ key:valInput.value })
 				});
 				if (code.ok) {
-					const supp =await fetch('http://127.0.0.1:3000/deleteAccount', {
+					const supp =await fetch('/api/deleteAccount', {
 						method: 'POST',
 						headers: {
 							'Authorization': `Bearer ${token}`
@@ -147,7 +147,7 @@ export async function profileHandler(): Promise<void> {
 						alert("Erreur lors de la suppression du compte");
 				}
 			} else {
-				const supp = await fetch('http://127.0.0.1:3000/login', {
+				const supp = await fetch('/api/login', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ export async function profileHandler(): Promise<void> {
 					body: JSON.stringify({ username: localStorage.getItem('username'), password: valInput.value })
 				});
 				if (supp.ok) {
-					const supp =await fetch('http://127.0.0.1:3000/deleteAccount', {
+					const supp =await fetch('/api/deleteAccount', {
 						method: 'POST',
 						headers: {
 							'Authorization': `Bearer ${token}`
@@ -177,7 +177,7 @@ export async function profileHandler(): Promise<void> {
 	});
 
 	valBBtn.addEventListener('click', async () => {
-		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const activ = await fetch('/api/verifActivity', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`
@@ -264,7 +264,7 @@ export async function profileHandler(): Promise<void> {
 	userBox.appendChild(userInfo);
 
 	updatebutton.addEventListener('click', async () => {
-		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const activ = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`
@@ -277,7 +277,7 @@ export async function profileHandler(): Promise<void> {
 			launchApp();
 			return;
 		}
-		const res = await fetch('http://127.0.0.1:3000/updateUser', {
+		const res = await fetch('/api/updateUser', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -308,7 +308,7 @@ export async function profileHandler(): Promise<void> {
 	avButton.addEventListener('drop', async (e) => {
 		e.preventDefault();
 		const file = e.dataTransfer?.files[0];
-		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const activ = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`
@@ -335,7 +335,7 @@ export async function profileHandler(): Promise<void> {
 		reader.onload = async () => {
 		const base64 = reader.result; // ex: "data:image/png;base64,iVBORw0KG..."
 
-		const res = await fetch("http://127.0.0.1:3000/uploadAvatar", {
+		const res = await fetch("/api/uploadAvatar", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -384,7 +384,7 @@ export async function profileHandler(): Promise<void> {
 	pwdBtn.className = 'mt-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 block ml-auto';
 
 	pwdBtn.addEventListener('click', async () => {
-		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const activ = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`
@@ -397,7 +397,7 @@ export async function profileHandler(): Promise<void> {
 			launchApp();
 			return;
 		}
-		const res = await fetch('http://127.0.0.1:3000/changePassword', {
+		const res = await fetch('/api/changePassword', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -435,7 +435,7 @@ export async function profileHandler(): Promise<void> {
 	twofaBtn.className = 'w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700';
 
 	twofaBtn.addEventListener('click', async () => {
-		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const activ = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`
@@ -448,7 +448,7 @@ export async function profileHandler(): Promise<void> {
 			launchApp();
 			return;
 		}
-		const res = await fetch('http://127.0.0.1:3000/isit2fa', {
+		const res = await fetch('/api/isit2fa', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`
@@ -489,7 +489,7 @@ export async function profileHandler(): Promise<void> {
 	supBtn.className = 'w-full bg-red-600 text-white py-2 rounded hover:bg-red-700';
 
 	supBtn.addEventListener('click', async () => {
-		const activ = await fetch('http://127.0.0.1:3000/verifActivity', {
+		const activ = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`
@@ -502,7 +502,7 @@ export async function profileHandler(): Promise<void> {
 			launchApp();
 			return;
 		}
-		const res = await fetch('http://127.0.0.1:3000/isit2fa', {
+		const res = await fetch('/api/isit2fa', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${token}`
@@ -548,7 +548,7 @@ export async function profileHandler(): Promise<void> {
 	backBox.appendChild(backBtn);
 
 		backBtn.addEventListener('click', async () => {
-			const res = await fetch('http://127.0.0.1:3000/verifActivity', {
+			const res = await fetch('/api/verifActivity', {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${token}`

@@ -18,10 +18,12 @@ export function getBackground(): HTMLDivElement {
   return bg;
 }
 
+import bgImg from './assets/bg.jpg';
+
 function setupBackground() {
 	const bg = getBackground();
 	bg.className = 'fixed inset-0 bg-cover bg-center flex items-center justify-center';
-	bg.style.backgroundImage = "url('/assets/bg.jpg')";
+	bg.style.backgroundImage = `url(${bgImg})`;
 
 	app?.appendChild(bg);
 }
@@ -54,8 +56,8 @@ export async function launchApp() {
 			matchHandler('tournament');
 		},
 		onProfile: () => {
-				mainMenu.remove();
-				profileHandler();
+			mainMenu.remove();
+			profileHandler();
 		},
 		onRankings: () => {
 			mainMenu.remove();

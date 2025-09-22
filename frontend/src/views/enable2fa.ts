@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 11:27:53 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/29 16:25:21 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 09:18:46 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ export async function enable2faHandler(): Promise<void> {
 		const infoText = document.createElement('p');
 		infoText.textContent = 'Scan the QR code with your authenticator app to enable 2FA.';
 
-		const coderes = await fetch('http://127.0.0.1:3000/create2faqrcode', {
+		const coderes = await fetch('/api/create2faqrcode', {
 			headers: { Authorization: `Bearer ${token}` }
 	});
 	let code = null;
@@ -106,7 +106,7 @@ confirmButton.addEventListener('click', async () => {
 		return;
 	}
 
-	const res = await fetch('http://localhost:3000/activation-2fa', {
+	const res = await fetch('/api/activation-2fa', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

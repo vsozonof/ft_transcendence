@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   register.ts                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 23:46:36 by rostrub           #+#    #+#             */
-/*   Updated: 2025/08/30 13:10:46 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/22 09:16:22 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,7 @@ export async function registerHandler(): Promise<void> {
 				return;
 			}
 			console.log("registration");
-			const res = await fetch('http://127.0.0.1:3000/register', {
+			const res = await fetch('/api/register', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

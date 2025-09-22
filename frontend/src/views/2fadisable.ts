@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/08/29 16:24:06 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 09:18:35 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ export async function tfa_disHandler(): Promise<void> {
 				errorMessage.textContent = 'Please enter a key';
 				return;
 			}
-			const res = await fetch('http://127.0.0.1:3000/disable2fa',{
+			const res = await fetch('/api/disable2fa',{
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   login.ts                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/02 10:30:46 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/22 09:19:27 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ export async function loginHandler(): Promise<void> {
 				errorMessage.textContent = 'Please fill in all fields';
 				return;
 			}
-			const user = await fetch('http://127.0.0.1:3000/getUserByUsername', {
+			const user = await fetch('/api/getUserByUsername', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ export async function loginHandler(): Promise<void> {
 					errorMessage.textContent = 'Invalid username or passwords';
 					return;
 				}
-				let res = await fetch('http://127.0.0.1:3000/login', {
+				let res = await fetch('/api/login', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export async function loginHandler(): Promise<void> {
 						resolve();
 					} else {
 						background.removeChild(loginWrapper);
-						await fetch('http://127.0.0.1:3000/updateActivity', {
+						await fetch('/api/updateActivity', {
 							method: 'POST',
 							headers: {
 								'Authorization': `Bearer ${data.token}`

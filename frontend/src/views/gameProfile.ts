@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/18 15:05:09 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:16:10 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 11:05:42 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ export async function gameProfile(){
 
 		try {
 			const username = localStorage.getItem('username');
-			const res = await fetch(`http://localhost:3000/stats/${username}`, {
+			const res = await fetch(`/api/stats/${username}`, {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -181,7 +181,7 @@ export async function gameProfile(){
 
 		try {
 			const username = localStorage.getItem('username');
-			const res = await fetch(`http://localhost:3000/stats/${username}`, {
+			const res = await fetch(`/api/stats/${username}`, {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -196,7 +196,7 @@ export async function gameProfile(){
 
 			const userId = data.stats.id;
 
-			const matchesRes = await fetch(`http://localhost:3000/matches/${userId}`, {
+			const matchesRes = await fetch(`/api/matches/${userId}`, {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${localStorage.getItem('token')}`

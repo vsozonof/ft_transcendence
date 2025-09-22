@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   2falogin.ts                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 14:50:02 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/17 10:19:37 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/22 09:18:41 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ export async function tfa_handler(): Promise<void> {
 				errorMessage.textContent = 'Please enter a key';
 				return;
 			}
-			const res = await fetch('http://127.0.0.1:3000/tfaLogin',{
+			const res = await fetch('/api/tfaLogin',{
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ export async function tfa_handler(): Promise<void> {
 			if (res.ok)	{
 				const data = await res.json();
 				console.log('Login successful, token:', data.token);
-				await fetch('http://127.0.0.1:3000/updateActivity', {
+				await fetch('/api/updateActivity', {
 							method: 'POST',
 							headers: {
 								'Authorization': `Bearer ${data.token}`

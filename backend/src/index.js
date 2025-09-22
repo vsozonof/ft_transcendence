@@ -74,7 +74,7 @@ fastify.register(webSocketPlugin);
 
 let waitingPlayer = null; 
 let tournamentQueue = [];
-fastify.post("/queue", async (request, reply) => {
+fastify.post("/api/queue", async (request, reply) => {
 	return new Promise(async (resolve) => {
 		const { mode, token } = request.body || {};
 		let user;
@@ -164,11 +164,11 @@ fastify.post("/queue", async (request, reply) => {
 
 
 				tournamentQueue.forEach((p, index) => {
-					p.reply.send({
+					p.reply.send(JSON.stringify(({
 						tournamentId: tournament.id,
 						playerNumber: index,
 						players,
-					});
+					})));
 					p.resolve();
 				});
 
@@ -179,7 +179,7 @@ fastify.post("/queue", async (request, reply) => {
 	});
 });
 
-fastify.post("/rooms", async (request, reply) => {
+fastify.post("/api/rooms", async (request, reply) => {
 	const { mode } = request.body || {};
 	if (!["ai", "pvp", "tournament", "local"].includes(mode))
 		return reply.code(400).send({ error: "Invalid game mode" });
@@ -190,7 +190,7 @@ fastify.post("/rooms", async (request, reply) => {
 });
 
 fastify.register(async function (fastify) {
-fastify.get("/game", { websocket: true}, (conn) => {
+fastify.get("/ws/game", { websocket: true}, (conn) => {
 	let joinedRoom = null;
 
 	conn.on("message", (raw) => {
@@ -234,7 +234,7 @@ fastify.get("/game", { websocket: true}, (conn) => {
 })
 
 fastify.register(async function (fastify) {
-fastify.get("/tournament", { websocket: true}, (conn) => {
+fastify.get("/ws/tournament", { websocket: true}, (conn) => {
 	let joinedTournament =	null;
 
 	conn.on("message", (raw) => {
@@ -266,7 +266,6 @@ fastify.get("/tournament", { websocket: true}, (conn) => {
 			}));
 
 			if (tournament.allPlayersJoined()) {
-				tournament.broadcastResults();
 				tournament.startRound1();
 			}
 		}
@@ -283,7 +282,7 @@ fastify.get("/tournament", { websocket: true}, (conn) => {
 });
 })
 
-fastify.get('/matches/:id', async (request, reply) => {
+fastify.get('/api/matches/:id', async (request, reply) => {
 	const { id } = request.params;
 	try {
 		const rows = await new Promise((resolve, reject) => {
@@ -316,7 +315,7 @@ fastify.get('/matches/:id', async (request, reply) => {
 	}
 });
 
-fastify.get('/stats/:username', async (request, reply) => {
+fastify.get('/api/stats/:username', async (request, reply) => {
 	const { username } = request.params;
 	return new Promise((resolve, reject) => {
 		db.get(
@@ -386,7 +385,7 @@ fastify.get('/api/db', async (request, reply) => {
 });
 
 
-fastify.post('/register', async (request, reply) => {
+fastify.post('/api/register', async (request, reply) => {
 	const { mail, username,  password, verifPassword } = request.body;
 
 	if (password !== verifPassword) {
@@ -417,7 +416,7 @@ fastify.post('/register', async (request, reply) => {
 	}
 })
 
-fastify.post('/login', async (request, reply) => {
+fastify.post('/api/login', async (request, reply) => {
 	const {username, password} = request.body;
 	console.log(' received data:', { username, password });
 	if (await loginUser(username, password) == true)
@@ -431,7 +430,7 @@ fastify.post('/login', async (request, reply) => {
 		reply.code(401).send({'error': 'Invalid credentials'});
 })
 
-fastify.post('/changePassword', async (request, reply) => {
+fastify.post('/api/changePassword', async (request, reply) => {
 	const { oldPassword, newPassword, confirmPassword } = request.body;
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token)
@@ -449,7 +448,7 @@ fastify.post('/changePassword', async (request, reply) => {
 	}
 });
 
-fastify.get('/getUser', async (request, reply) => {
+fastify.get('/api/getUser', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
@@ -467,7 +466,7 @@ fastify.get('/getUser', async (request, reply) => {
 	}
 });
 
-fastify.post('/getUserByUsername', async (request, reply) => {
+fastify.post('/api/getUserByUsername', async (request, reply) => {
 	const { username } = request.body;
 	console.log('Received request to get user by username:', username);
 	if (!username) {
@@ -480,7 +479,7 @@ fastify.post('/getUserByUsername', async (request, reply) => {
 	reply.send({ id: user.id, username: user.username, email: user.email, is2fa: user.is2fa });
 });
 
-fastify.get('/getUserByToken', async (request, reply) => {
+fastify.get('/api/getUserByToken', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
@@ -498,7 +497,7 @@ fastify.get('/getUserByToken', async (request, reply) => {
 	}
 });
 
-fastify.get('/isit2fa', async (request, reply) => {
+fastify.get('/api/isit2fa', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
@@ -519,7 +518,7 @@ fastify.get('/isit2fa', async (request, reply) => {
 	}
 });
 
-fastify.get('/create2faqrcode', async (request, reply) => {
+fastify.get('/api/create2faqrcode', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
@@ -542,7 +541,7 @@ fastify.get('/create2faqrcode', async (request, reply) => {
 	}
 });
 
-fastify.post('/activation-2fa', async (request, reply) => {
+fastify.post('/api/activation-2fa', async (request, reply) => {
 	const { OTP } = request.body;
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token) {
@@ -588,7 +587,7 @@ fastify.post('/activation-2fa', async (request, reply) => {
 	}
 });
 
-fastify.post('/disable2fa' , async (request, reply) => {
+fastify.post('/api/disable2fa' , async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	const key = request.body.key;
 	if (!token) {
@@ -606,7 +605,7 @@ fastify.post('/disable2fa' , async (request, reply) => {
 	}
 });
 
-fastify.post('/tfaLogin', async (request, reply) => {
+fastify.post('/api/tfaLogin', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	const { key } = request.body;
 	if (!token) {
@@ -637,7 +636,7 @@ fastify.post('/tfaLogin', async (request, reply) => {
 	}
 });
 
-fastify.post('/updateUser', async (request, reply) => {
+fastify.post('/api/updateUser', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
@@ -660,7 +659,7 @@ fastify.post('/updateUser', async (request, reply) => {
 
 });
 
-fastify.post('/uploadAvatar', async (request, reply) => {
+fastify.post('/api/uploadAvatar', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	const avatar = request.body.avatar;
 	if (!token) {
@@ -678,7 +677,7 @@ fastify.post('/uploadAvatar', async (request, reply) => {
 
 });
 
-fastify.post('/deleteAccount', async (request, reply) => {
+fastify.post('/api/deleteAccount', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
@@ -696,7 +695,7 @@ fastify.post('/deleteAccount', async (request, reply) => {
 	}
 });
 
-fastify.get('/verifActivity', async (request, reply) => {
+fastify.get('/api/verifActivity', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token) {
 		return reply.code(401).send({ error: 'Token is required' });
@@ -714,7 +713,7 @@ fastify.get('/verifActivity', async (request, reply) => {
 	}
 });
 
-fastify.post('/updateActivity', async (request, reply) => {
+fastify.post('/api/updateActivity', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	console.log('Token received for activity update:', token);
 	if (!token) {
@@ -733,7 +732,7 @@ fastify.post('/updateActivity', async (request, reply) => {
 	}
 });
 
-fastify.post('/addfriend', async (request, reply) => {
+fastify.post('/api/addfriend', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	const { friendName } = request.body;
 	if (!token)
@@ -750,7 +749,7 @@ fastify.post('/addfriend', async (request, reply) => {
 	}
 });
 
-fastify.get('/getFriends', async (request, reply) => {
+fastify.get('/api/getFriends', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	if (!token)
 		return reply.code(401).send({ error: 'Token is required' });

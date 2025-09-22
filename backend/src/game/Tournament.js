@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 09:27:42 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:14:28 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 10:55:01 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,11 +52,11 @@ class Tournament {
 			}
 
 			if (this.semiWinners[0] && this.semiWinners[1]) {
-				this.broadcastResults({
+				this.broadcastResults(JSON.stringify({
 					type: "tournament_update",
 					g1Winner: this.semiWinners[0].id,
 					g2Winner: this.semiWinners[1].id
-				})
+				}));
 
 				this.startRound2();
 			}
@@ -70,10 +70,10 @@ class Tournament {
 			}
 
 			if (this.winner) {
-				this.broadcastResults({
+				this.broadcastResults(JSON.stringify({
 					type: "tournament_finished",
 					winner: this.winner.id
-				})
+				}));
 			}
 		}
 	}
@@ -119,8 +119,9 @@ class Tournament {
 
 	broadcastResults(msg) {
 		this.players.forEach(player => {
+			console.log("Message:", msg);
 			if (player.socket) {
-				player.socket.send(JSON.stringify(msg) );
+				player.socket.send(JSON.stringify(msg));
 			}
 		});
 	}

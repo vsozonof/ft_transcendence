@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 10:58:29 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:15:33 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 10:52:00 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 		try {
 			tData = JSON.parse(msg.data);
 		} catch (e) {
-			console.error("Failed to parse WS message:", e);
+			console.log("D");
+			console.error("Failed to parse WS message:", e, " data was:", msg.data);
 			return;
 		}
 		console.log("Received WS message:", tData);
@@ -54,7 +55,7 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 			roomKey.username2 = opponent.username;
 			roomKey.avatar2 = opponent.avatar;
 			
-			const ws_game = new WebSocket("ws://localhost:3000/game");
+			const ws_game = new WebSocket("wss://10.12.3.15:8443/ws/game");
 
 			ws_game.onopen = () => {
 				ws_game.send(JSON.stringify({ type: "join_room", roomId: roomKey.roomId, side: roomKey.player }));
@@ -65,6 +66,7 @@ function tournamentHandler(lobbyKey, ws_tournament) {
 				try {
 					gData = JSON.parse(msg.data);
 				} catch (e) {
+					console.log("E");
 					console.error("Failed to parse WS message:", e);
 					return;
 				}

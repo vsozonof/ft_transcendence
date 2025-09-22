@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:14:02 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 10:30:46 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -246,6 +246,7 @@ class gameRoom {
 			}
 		}
 
+		console.log("Recording match:", p1_name, "vs", p2_name);
 		db.all(
 			`SELECT id, username
 			FROM users

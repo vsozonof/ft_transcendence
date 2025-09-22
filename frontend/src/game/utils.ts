@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:15:47 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 09:18:30 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -310,7 +310,7 @@ function showWinScreen(winner: string, ctx, ws: WebSocket, lobbyKey) {
 }
 
 async function updateUserInfos() {
-	const user = await fetch('http://127.0.0.1:3000/getUserByToken', {
+	const user = await fetch('/api/getUserByToken', {
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',

@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/30 20:26:41 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/22 04:15:36 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 10:42:43 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ async function queueForTournament(mode: string) {
 	}
 
 		try {
-		const res = await fetch("http://localhost:3000/queue", {
+		const res = await fetch("/api/queue", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ mode, token: localStorage.getItem('token') })
@@ -68,7 +68,7 @@ async function queueForTournament(mode: string) {
 		lobbyKey.playerId = playerNumber;
 		lobbyKey.players = players;
 		
-		const ws = new WebSocket("ws://localhost:3000/tournament");
+		const ws = new WebSocket("wss://10.12.3.15:8443/ws/tournament");
 		
 		ws.onopen = () => {
 			ws.send(JSON.stringify({ type: "join_tournament", tournamentId, playerNumber }));
@@ -79,6 +79,7 @@ async function queueForTournament(mode: string) {
 			try {
 				data = JSON.parse(msg.data);
 			} catch (e) {
+				console.log("A");
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
@@ -109,7 +110,7 @@ async function queueForPvp(mode: string) {
 	}
 
 	try {
-		const res = await fetch("http://localhost:3000/queue", {
+		const res = await fetch("/api/queue", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ mode, token: localStorage.getItem('token') })
@@ -133,7 +134,7 @@ async function queueForPvp(mode: string) {
 		lobbyKey.username2 = opponent.username;
 		lobbyKey.avatar2 = opponent.avatar;
 
-		const ws = new WebSocket("ws://localhost:3000/game");
+		const ws = new WebSocket("wss://10.12.3.15:8443/ws/game");
 		
 		ws.onopen = () => {
 			ws.send(JSON.stringify({ type: "join_room", roomId, side }));
@@ -144,6 +145,7 @@ async function queueForPvp(mode: string) {
 			try {
 				data = JSON.parse(msg.data);
 			} catch (e) {
+				console.log("B");
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
@@ -209,13 +211,13 @@ async function createAndJoinAiOrLocalRoom(mode: string) {
 	});
 
 	try {
-		const res = await fetch("http://localhost:3000/rooms", {
+		const res = await fetch("/api/rooms", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ mode })
 			});
 		const data = await res.json();
-		const ws = new WebSocket("ws://localhost:3000/game");
+		const ws = new WebSocket("wss://10.12.3.15:8443/ws/game");
 		
 		ws.onopen = () => {
           ws.send(JSON.stringify({ type: "join_room", roomId: data.roomId }));
@@ -226,6 +228,7 @@ async function createAndJoinAiOrLocalRoom(mode: string) {
 			try {
 				data = JSON.parse(msg.data);
 			} catch (e) {
+				console.log("C");
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
