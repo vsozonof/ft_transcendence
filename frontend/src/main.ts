@@ -4,6 +4,8 @@ import { createMainMenu } from "./views/mainMenu";
 import { friendsHandler } from "./views/friends";
 import { matchHandler } from "./game/matchHandler";
 
+import { gameProfile } from "./views/gameProfile";
+
 const app = document.getElementById('app');
 
 export function getBackground(): HTMLDivElement {
@@ -57,6 +59,7 @@ export async function launchApp() {
 		},
 		onRankings: () => {
 			mainMenu.remove();
+			gameProfile();
 		},
 		onFriends: () => {
 			mainMenu.remove();

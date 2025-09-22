@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/03 23:46:04 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/13 23:16:09 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:15:27 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,14 +46,13 @@ export function pongSessionHandler(lobbyKey, ws) {
 
 	async function start() {
 		renderer.setupCanvas();
-		renderer.setupHeader(lobbyKey.mode, lobbyKey.username1, lobbyKey.avatar1, lobbyKey.username2, lobbyKey.avatar2);
-		await showReadyScreen(renderer.returnCtx(), lobbyKey.mode, ws, lobbyKey.player);
+		renderer.setupHeader(lobbyKey.mode, lobbyKey.username1, lobbyKey.avatar1, lobbyKey.username2, lobbyKey.avatar2, lobbyKey.player);
+		await showReadyScreen(renderer.returnCtx(), lobbyKey.mode, ws, lobbyKey.player, lobbyKey);
 		gameLoop();
 	}
 
-	ws.onmessage = (message) => {
+	ws.onmessage = (message: any) => {
 		const data = JSON.parse(message.data);
-		console.log("Received WS message:", data);
 		if (data.type === 'game_state') {
 			latestState.p1y = data.p1y;
 			latestState.p2y = data.p2y;
@@ -126,12 +125,21 @@ export function createPongRenderer() {
 		draw();
 	}
 
-	function setupHeader(mode: string, name1: string, img1: string, name2: string | null, img2: string | null) {
-		state.ui.p1.name.textContent = name1;
-		state.ui.p1.img.src = img1;
+	function setupHeader(mode: string, name1: string, img1: string, name2: string | null, img2: string | null, player: number) {
+		
+		if (player === 0) {
+			state.ui.p1.name.textContent = name1;
+			state.ui.p1.img.src = img1;
 
-		state.ui.p2.name.textContent = name2;
-		state.ui.p2.img.src = img2;
+			state.ui.p2.name.textContent = name2;
+			state.ui.p2.img.src = img2;
+		} else {
+			state.ui.p1.name.textContent = name2;
+			state.ui.p1.img.src = img2;
+
+			state.ui.p2.name.textContent = name1;
+			state.ui.p2.img.src = img1;
+		}
 	}
 
 	// ? _________________
@@ -140,7 +148,6 @@ export function createPongRenderer() {
 	// ? -> This function is called in the update() loop to refresh the game state
 	function draw() {
 		state.ctx.clearRect(0, 0, state.canvas.width, state.canvas.height);
-		console.log("Drawing frame, countdown:", state.countDown);
 		
 		drawScore(state.ctx, state.score1, state.score2);
 		state.paddles.p1.draw();

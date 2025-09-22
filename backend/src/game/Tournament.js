@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/12 09:27:42 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/15 13:08:23 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:14:28 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@ class Tournament {
 			}
 
 			if (this.semiWinners[0] && this.semiWinners[1]) {
-				console.log("Tournament", this.id, "Round 1 complete. Semi-final winners:", this.semiWinners[0].id, this.semiWinners[1].id);
 				this.broadcastResults({
 					type: "tournament_update",
 					g1Winner: this.semiWinners[0].id,
@@ -71,7 +70,6 @@ class Tournament {
 			}
 
 			if (this.winner) {
-				console.log("Tournament", this.id, "Winner is:", this.winner.id);
 				this.broadcastResults({
 					type: "tournament_finished",
 					winner: this.winner.id
@@ -108,20 +106,14 @@ class Tournament {
 	}
 
 	handleMessage(conn, msg) {
-
-		console.log("Tournament", this.id, "received message:", msg);
-
 		if (msg.type === "match_result" && msg.game && (msg.game === "r1g1" || msg.game === "r1g2")) {
 			this.handleMatchResult(msg.game, msg.winner);
 			conn.send(JSON.stringify({ type: "show_bracket" }));
 		}
 		else if (msg.type === "match_result" && msg.game && msg.game === "final") {
-			console.log("Tournament", this.id, "FINAL MATCH ENDED. WINNER:", msg.winner, msg.playerId);
 			this.handleMatchResult(msg.game, msg.winner);
 			conn.send(JSON.stringify({ type: "show_bracket" }));
 		}
-		else
-			console.log("TOURNAMENT ENDED!!");
 	}
 
 

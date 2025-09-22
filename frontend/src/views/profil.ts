@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   profil.ts                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 13:03:37 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/03 11:00:28 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/18 15:03:23 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -536,6 +536,15 @@ export async function profileHandler(): Promise<void> {
 		bg-red-600 text-white rounded-md py-2 w-full font-semibold
 		hover:bg-red-700 transition-colors mt-6
 	`;
+
+	const gameProfileBtn = document.createElement('button');
+	gameProfileBtn.textContent = 'Accéder au profil de jeu';
+	gameProfileBtn.className = `
+		bg-green-600 text-white rounded-md py-2 w-full font-semibold
+		hover:bg-green-700 transition-colors mt-6
+	`;
+	
+	backBox.appendChild(gameProfileBtn);
 	backBox.appendChild(backBtn);
 
 		backBtn.addEventListener('click', async () => {

@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/30 20:26:41 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/13 15:37:27 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:15:36 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ async function queueForTournament(mode: string) {
 		const data = await res.json();
 
 		if (data.error) {
-			console.log("Error queuing for PVP or tournament:", data.error);
 			alert(`Error: queue ${data.error}`);
 			
 			const background = getBackground();
@@ -83,7 +82,6 @@ async function queueForTournament(mode: string) {
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
-			console.log("Received WS message:", data);
 			if (data.type === "tournament_joined") {
 				tournamentHandler(lobbyKey, ws);
 			}
@@ -120,7 +118,6 @@ async function queueForPvp(mode: string) {
 		const data = await res.json();
 
 		if (data.error) {
-			console.log("Error queuing for PVP or tournament:", data.error);
 			alert(`Error: queue ${data.error}`);
 			
 			const background = getBackground();
@@ -136,8 +133,6 @@ async function queueForPvp(mode: string) {
 		lobbyKey.username2 = opponent.username;
 		lobbyKey.avatar2 = opponent.avatar;
 
-		console.log(lobbyKey.username1, lobbyKey.username2);
-		
 		const ws = new WebSocket("ws://localhost:3000/game");
 		
 		ws.onopen = () => {
@@ -152,8 +147,6 @@ async function queueForPvp(mode: string) {
 				console.error("Failed to parse WS message:", e);
 				return;
 			}
-
-			console.log("Received WS message:", data);
 
 			if (data.type === "lobby_joined") {
 				lobbyKey.roomId = data.id;
@@ -222,7 +215,6 @@ async function createAndJoinAiOrLocalRoom(mode: string) {
 			body: JSON.stringify({ mode })
 			});
 		const data = await res.json();
-		console.log("Created room:", data);
 		const ws = new WebSocket("ws://localhost:3000/game");
 		
 		ws.onopen = () => {
