@@ -43,13 +43,23 @@ fastify.register(webSocketPlugin);
 // ? DONE: Client will force-ready after 20s if not ready yet
 
 
-// TODO: End of game stats screen
-// TODO: Write game results to db
-// TODO: Do profile page
+// ? DONE: Do GAME profile page
+// ? DONE: Design the page
+// ? DONE: Fetch stats from backend
+// ? DONE: Display stats
+// ? DONE: Add canvas for graphs
+// ? DONE: Back to main menu button in game profile page
+// ? DONE: Write game results to db
+// ? DONE: match history
+// ? DONE: meme img when stats non clicked
+
+// ? DONE: fix header and end screen missmatch:
+// ? DONE: side 1 on header is shown on the left but should be on the right.
+// ? DONE: both users are declared winner on end screen
+
+// TODO: Dockerize the app
 
 
-// ! Clean code - Delete what's not used - Split functions between files if needed
-// ! Add comments - fix inconsistencies
 // ! fix at the end :
 // ! investigate why back and forward arrows in browser cause issues
 // ! check if disconnecting during tournament is handled properly and does not block
@@ -275,6 +285,76 @@ fastify.get("/tournament", { websocket: true}, (conn) => {
 	});
 });
 })
+
+fastify.get('/matches/:id', async (request, reply) => {
+	const { id } = request.params;
+	console.log('Received request for matches of user ID:', id);
+	try {
+		const rows = await new Promise((resolve, reject) => {
+			db.all(`
+				SELECT m.*,
+					u1.username AS player1_username, u1.avatar AS player1_avatar,
+					u2.username AS player2_username, u2.avatar AS player2_avatar,
+					uw.username AS winner_username
+				FROM matches m
+				JOIN users u1 ON m.player1_id = u1.id
+				JOIN users u2 ON m.player2_id = u2.id
+				JOIN users uw ON m.winner = uw.id
+				WHERE m.player1_id = ? OR m.player2_id = ?
+				ORDER BY m.played_at DESC
+				LIMIT 10
+			`, [id, id], (err, rows) => {
+				if (err) {
+					console.error('❌ Failed to fetch matches:', err.message);
+					return reject(err);
+				} else
+					resolve(rows);
+			});
+		});
+
+		reply.send({ matches: rows });
+	}
+	catch (err) {
+		console.error('Error fetching matches:', err);
+		reply.code(500).send({ error: 'Database error' });
+	}
+});
+
+fastify.get('/stats/:username', async (request, reply) => {
+	const { username } = request.params;
+	console.log('Received request for stats of username:', username);
+	return new Promise((resolve, reject) => {
+		db.get(
+			`SELECT
+				id,
+				wins_pvp, losses_pvp,
+				wins_ai, losses_ai,
+				wins_tournament, losses_tournament,
+				goals_scored, goals_conceded
+			FROM users WHERE username = ?`,
+			[username],
+			(err, row) => {
+				if (err)
+					return (reply.code(500).send({ error: 'Database error' }));
+				else if (!row) {
+					return (reply.code(404).send({ error: 'User not found' }));
+				}
+				else {
+					reply.send({
+						username,
+						stats: {
+							id: row.id,
+							pvp: { wins: row.wins_pvp, losses: row.losses_pvp },
+							ai: { wins: row.wins_ai, losses: row.losses_ai },
+							tournament: { wins: row.wins_tournament, losses: row.losses_tournament },
+							goals: { scored: row.goals_scored, conceded: row.goals_conceded }
+						}
+					});
+					resolve(row);
+				}
+		});
+	});
+});
 
 // ! -------------------
 
@@ -670,4 +750,4 @@ fastify.listen({ port: 3000, host: '0.0.0.0' }, (err) => {
 });
 
 
-module.exports = { rooms };
+module.exports = { rooms};

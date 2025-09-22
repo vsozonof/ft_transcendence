@@ -6,7 +6,7 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 14:30:51 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/15 13:32:58 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 04:03:12 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,7 @@ function checkKeyPresses(keysPressed, ws: WebSocket, mode: string, player: numbe
 	}
 }
 
-function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | "ai" | "tournament", ws: WebSocket, side: number): Promise<void> {
+function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | "ai" | "tournament", ws: WebSocket, side: number, lobbyKey): Promise<void> {
   return new Promise((resolve) => {
 	console.log("Showing ready screen for mode:", mode, "side:", side);
     const readyWrapper = document.createElement('div');
@@ -177,7 +177,7 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | 
     readyP1.onclick = () => {
       readyP1.disabled = true;
       readyP1.textContent = '✅';
-	  ws.send(JSON.stringify({ type: 'ready', side: side }) );
+	  ws.send(JSON.stringify({ type: 'ready', side: side, username: lobbyKey.username1 }) );
     };
 
     if (mode === 'local') {
@@ -250,12 +250,14 @@ function showReadyScreen(ctx: CanvasRenderingContext2D, mode: "local" | "pvp" | 
 function showWinScreen(winner: string, ctx, ws: WebSocket, lobbyKey) {
 
 	let winnerId : number;
+	let winnerName : string;
+	
 	if (winner === "p1") {
-		winner = lobbyKey.username1 || "Player 1";
+		winner = (lobbyKey.player === 0) ? lobbyKey.username1! : lobbyKey.username2!;
 		winnerId = 0;
 	}
 	else if (winner === "p2") {
-		winner = lobbyKey.username2 || "Player 2";
+		winner = (lobbyKey.player === 1) ? lobbyKey.username1! : lobbyKey.username2!;
 		winnerId = 1;
 	}
 

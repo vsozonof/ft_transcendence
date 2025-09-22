@@ -6,13 +6,14 @@
 /*   By: vsozonof <vsozonof@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 15:46:03 by vsozonof          #+#    #+#             */
-/*   Updated: 2025/09/13 16:01:26 by vsozonof         ###   ########.fr       */
+/*   Updated: 2025/09/22 02:38:44 by vsozonof         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 const { createBall } = require('./ball.js');
 const { createPaddles } = require('./paddles.js');
 const { decideAction } = require('./ai.js');
+const db = require('../db/db.js');
 
 class gameRoom {
 
@@ -158,6 +159,7 @@ class gameRoom {
 
 		if (this.score1 >= 3 || this.score2 >= 3) {
 			this.broadcast({ type: "game_over", scores: { p1: this.score1, p2: this.score2 }, winner: scorer });
+			this.addScoretoDb();
 			return;
 		}
 
@@ -166,6 +168,125 @@ class gameRoom {
 			this.paddleCounter = 0;
 			this.startRoundLoop();
 		});
+	}
+
+	addScoretoDb() {
+		const mode = this.mode;
+		const p1_score = this.score1;
+		const p2_score = this.score2;
+		const p1_name = this.players[0].name;
+		const p2_name = this.players[1].name;
+		let winner;
+
+		console.log("Game over: ", p1_name, " ", p1_score, " - ", p2_score, " ", p2_name);
+
+		if (mode === "local")
+			return ;
+
+		const getColNames = (mode) => {
+			if (mode === "ai")
+				return { winCol: "wins_ai", lossCol: "losses_ai" };
+			if (mode === "pvp")
+				return { winCol: "wins_pvp", lossCol: "losses_pvp" };
+			if (mode === "tournament")
+				return { winCol: "wins_tournament", lossCol: "losses_tournament" };
+			return {};
+		};
+
+		const { winCol, lossCol } = getColNames(mode);
+		let p1Result;
+		let p2Result;
+		
+		if (p1_score > p2_score) {
+			p1Result = "win";
+			p2Result = "loss";
+		}
+		else {
+			p1Result = "loss";
+			p2Result = "win";
+		}
+
+		if (mode === "ai") {
+			const query = `
+				UPDATE users
+				SET ${p1Result === "win" ? winCol : lossCol} = ${p1Result === "win" ? winCol : lossCol} + 1,
+					goals_scored = goals_scored + ?,
+					goals_conceded = goals_conceded + ?
+				WHERE username = ?
+			`;
+			
+			db.run(query, [p1_score, p2_score, p1_name], (err) => {
+				if (err)
+					console.log ("Error: ", err);
+				else
+					console.log("Updated score of ", p1_name, " score: ", p1_score, p2_score);
+			});
+			
+			return ;
+		}
+		else if (mode === "pvp" || mode === "tournament") {
+			const updates = [
+				{ name: p1_name, result: p1Result, scored: p1_score, conceded: p2_score },
+				{ name: p2_name, result: p2Result, scored: p2_score, conceded: p1_score },
+			];
+
+			for (const { name, result, scored, conceded } of updates) {
+				const query = `
+					UPDATE users
+					SET ${result === "win" ? winCol : lossCol} = ${result === "win" ? winCol : lossCol} + 1,
+						goals_scored = goals_scored + ?,
+						goals_conceded = goals_conceded + ?
+					WHERE username = ?
+				`;
+					
+				db.run(query, [scored, conceded, name], (err) => {
+					if (err)
+						console.log ("Error: ", err);
+					else
+						console.log("Updated score of ", name, " score: ", scored, conceded);
+				});		
+			}
+		}
+
+		db.all(
+			`SELECT id, username
+			FROM users
+			WHERE username = ? OR username = ?`,
+			[p1_name, p2_name],
+		 	(err, rows) => {
+				if (err)
+					return (console.log("Error fetching user IDs: ", err));
+
+				const player1_id = rows.find(r => r.username === p1_name).id;
+				const player2_id = rows.find(r => r.username === p2_name).id;
+		
+				if (!player1_id || !player2_id) {
+					console.log("Could not find user IDs for players");
+					return ;
+				}
+
+				if (p1_score > p2_score)
+					winner = player1_id;
+				else
+					winner = player2_id;
+		
+				const query = `
+					INSERT INTO matches (
+						mode, player1_name, player2_name, player1_id, 
+						player2_id, score1, 
+						score2, winner
+					)
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+				`;
+
+				db.run(query, [mode, p1_name, p2_name, player1_id, player2_id, p1_score, p2_score, winner], (err) => {
+					if (err)
+						console.log ("Error: ", err);
+					else
+						console.log("Inserted match record for ", p1_name, " vs ", p2_name);
+				});
+			}
+		);
 	}
 
 	async startGameLoop() {
@@ -217,6 +338,12 @@ class gameRoom {
 	handleMessage(socket, msg) {
 		if (msg.type === "ready") {
 			const player = this.players.find(p => p.socket === socket);
+
+			if (msg.username) {
+				console.log("Player", player.side, " is named ", msg.username);
+				player.name = msg.username;
+			}
+
 			if (!player.ready) {
 				player.ready = true;
 				this.broadcast({ type: "lobby_update", mode: this.mode, players: this.playersList() });
@@ -235,8 +362,6 @@ class gameRoom {
 					this.movePaddle(this.paddle2, msg.direction, 600);
 			}
 		}
-
-	// destroy() {
 	}
 }
 
