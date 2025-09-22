@@ -131,6 +131,7 @@ export async function friendsHandler(): Promise<void> {
 			console.log('Friend added:', data);
 			friendInput.value = '';
 			overlay.classList.add('hidden');
+			loadFriends();
 		} else {
 			errorMessageb.classList.remove('hidden');
 			errorMessageb.textContent = 'Failed to add friend';
@@ -251,6 +252,7 @@ export async function friendsHandler(): Promise<void> {
 			});
 			if (!res.ok) {
 				localStorage.removeItem('token');
+				overlay.classList.remove('hidden');
 				background.removeChild(wrapper);
 				launchApp();
 			}

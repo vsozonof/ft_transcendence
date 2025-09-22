@@ -4,7 +4,7 @@ const fastify = require('fastify')({
 	bodyLimit: 10 * 1024 * 1024
 });
 
-const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser, verifActivity, updateActivity, addFriend } = require('./user.js');
+const {loginUser, createUser, getUserByUsername, is2faEnabled, ChangePassword, create2faqrcode, disable2fa, updateUser, majAvatar, deleteUser, verifActivity, updateActivity, addFriend, getUserById } = require('./user.js');
 
 const webSocketPlugin = require('@fastify/websocket')
 
@@ -606,29 +606,6 @@ fastify.post('/api/tfaLogin', async (request, reply) => {
 	}
 });
 
-fastify.post('/api/updateUser', async (request, reply) => {
-	const token = request.headers.authorization?.split(' ')[1];
-	if (!token) {
-		return reply.code(401).send({ error: 'Token is required' });
-	}
-	const { username, email } = request.body;
-	try {
-		const decoded = fastify.jwt.verify(token);
-		let user = await getUserByUsername(decoded.username);
-		if (!user) {
-			return reply.code(404).send({ error: 'User not found' });
-		}
-		await updateUser(user.id, { username, email });
-		console.log('Updating user:', user.username);
-		user = getUserByUsername(user.username);
-		reply.send({ user});
-	} catch (err) {
-		console.error('Error updating user:', err);
-		reply.code(500).send({ error: err.message });
-	}
-
-});
-
 fastify.post('/api/uploadAvatar', async (request, reply) => {
 	const token = request.headers.authorization?.split(' ')[1];
 	const avatar = request.body.avatar;
@@ -663,6 +640,29 @@ fastify.post('/api/deleteAccount', async (request, reply) => {
 		console.error('Error deleting account:', err);
 		reply.code(500).send({ error: 'Failed to delete account' });
 	}
+});
+
+fastify.post('/api/updateUser', async (request, reply) => {
+	const token = request.headers.authorization?.split(' ')[1];
+	if (!token) {
+		return reply.code(401).send({ error: 'Token is required' });
+	}
+	const { username, email } = request.body;
+	try {
+		const decoded = fastify.jwt.verify(token);
+		let user = await getUserByUsername(decoded.username);
+		if (!user) {
+			return reply.code(404).send({ error: 'User not found' });
+		}
+		await updateUser(user.id, { username, email });
+		user = await getUserById(user.id);
+		const newToken = fastify.jwt.sign({ id: user.id, username: user.username });
+		reply.send({ newToken });
+	} catch (err) {
+		console.error('Error updating user:', err);
+		reply.code(500).send({ error: err.message });
+	}
+
 });
 
 fastify.get('/api/verifActivity', async (request, reply) => {
@@ -733,12 +733,11 @@ fastify.get('/api/getFriends', async (request, reply) => {
 		let friends_list = [];
 		friends_list = await JSON.parse(user.friend_list);
 		for (let i = 0; i < friends_list.length; i++) {
-			friend = await getUserByUsername(friends_list[i]);
+			friend = await getUserById(friends_list[i]);
 			if (friend)
 			{
 				const time = Date.now()
-				console.log('Friend found:', friend.username);
-				friend.isOnline = time - lastActivity <= 5 * 60 * 1000 ? true : false;
+				friend.isOnline = time - lastActivity <= 1 * 60 * 1000 ? true : false;
 				friends.push(friend);
 			}
 			else

@@ -292,7 +292,12 @@ export async function profileHandler(): Promise<void> {
 			})
 		});
 		if (res.ok) {
+			const succes = await res.json();
+			localStorage.removeItem('token');
+			localStorage.setItem('token', succes.newToken);
 			alert("Informations mises à jour !");
+			background.removeChild(wrapper);
+			profileHandler();
 		} else {
 			errorMessage.classList.remove('hidden');
 			errorMessage.textContent = (await res.json()).error || 'Update failed';
