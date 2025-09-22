@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   friends.ts                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rostrub <rostrub@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ertupop <ertupop@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 11:01:05 by rostrub           #+#    #+#             */
-/*   Updated: 2025/09/21 15:45:53 by rostrub          ###   ########.fr       */
+/*   Updated: 2025/09/22 06:59:57 by ertupop          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ export async function friendsHandler(): Promise<void> {
 			}
 		});
 		if (!res.ok) {
+			overlay.classList.add('hidden');
 			localStorage.removeItem('token');
 			background.removeChild(wrapper);
 			launchApp();
