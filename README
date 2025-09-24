@@ -1,5 +1,1 @@
-Pour lancer le projet en local:
-dans backend  : npm run dev
-dans frontend : npm run dev
-
-si node_modules non présent, run : npm install dans frontend ET backend
+Projet validé 100/100
